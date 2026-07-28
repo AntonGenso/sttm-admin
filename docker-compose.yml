@@ -1,0 +1,17 @@
+services:
+  front-admin:
+    container_name: sttm_admin_dev
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    parts:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - dev
+
+networks:
+  dev:
