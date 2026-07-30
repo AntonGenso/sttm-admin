@@ -8,6 +8,7 @@ import type { IMissionData } from "../types/missions";
 
 type Inputs = {
   missionName: string;
+  attachment: FileList;
 };
 
 export default function MissionPage() {
@@ -22,6 +23,9 @@ export default function MissionPage() {
     reset,
     formState: { errors },
   } = useForm<Inputs>();
+
+  const fileList = watch("attachment");
+  const fileName = fileList?.[0]?.name;
 
   const { data, error, isLoading } = useQuery({
     queryKey: ["missions"],
@@ -75,6 +79,21 @@ export default function MissionPage() {
                 {...register("missionName", { required: true })}
               />
             </label>
+            <label
+              htmlFor="attachment"
+              className="w-fit cursor-pointer rounded-[6px] bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
+            >
+              Uppload file
+            </label>
+            <span className="text-sm text-gray-500">
+              {fileName || "No file selected"}
+            </span>
+            <input
+              id="attachment"
+              type="file"
+              {...register("attachment")}
+              className="hidden"
+            />
             {errors.missionName && (
               <span className="text-red-400">This field is required</span>
             )}
