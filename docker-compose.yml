@@ -1,6 +1,6 @@
 services:
-  front-admin:
-    container_name: sttm_admin_dev
+  sttm-admin:
+    container_name: sttm-admin-dev
     restart: unless-stopped
     build:
       context: .
@@ -9,7 +9,7 @@ services:
       - "5173:5173"
     volumes:
       - .:/app
-      - /app/node_modules
+      - /app/node_modules:/app/node_modules
     networks:
       - dev
 

@@ -1,20 +1,90 @@
 @import "tailwindcss";
 
-@theme {
-  --color-accent: #aa3bff;
+/* ── Fonts ── */
+@font-face {
+  font-family: "Alumni Sans";
+  src: url("/fonts/AlumniSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Alumni Sans";
+  src: url("/fonts/AlumniSans-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Alumni Sans";
+  src: url("/fonts/AlumniSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Alumni Sans";
+  src: url("/fonts/AlumniSans-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* @utility btn-primary{
-  padding: 12px 24px;
-  border-radius: 8px
-} */
+/* ── Design tokens (from step-to-the-moon) ── */
+@theme {
+  --font-alumni: "Alumni Sans", sans-serif;
 
-@layer base{
-  a{
-    @apply text-white text-inherit no-underline
+  --color-cyan: #00d4c8;
+  --color-cyan-bright: #00e3ff;
+  --color-cyan-dark: #006d86;
+  --color-cyan-glow: #4ec8ff;
+
+  --color-orange: #e88a1a;
+  --color-orange-bright: #ff7b1d;
+
+  --color-bg-base: #030a10;
+  --color-bg-deep: #07152a;
+  --color-bg-sidebar: #0a1a25;
+  --color-bg-card: #05141e;
+  --color-bg-card-light: #0f2d37;
+
+  --color-success: #03af8c;
+  --color-error: #d28080;
+
+  --color-text-secondary: rgba(255, 255, 255, 0.5);
+  --color-text-muted: rgba(255, 255, 255, 0.35);
+  --color-grey: #adbecc;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-alumni);
   }
 
-  *{
-    @apply text-white p-0 m-0
+  body {
+    min-height: 100vh;
+    color: #ffffff;
+    background: var(--color-bg-deep) url("/images/bg-main.webp") no-repeat
+      center / cover fixed;
+    box-sizing: border-box;
   }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+}
+
+/* Cyan-tinted scrollbar to match the space theme */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 227, 255, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 227, 255, 0.4);
 }
