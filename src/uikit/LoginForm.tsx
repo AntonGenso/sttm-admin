@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { AxiosError } from "axios";
 import { loginUser } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
+import { PasswordInput } from "./PasswordInput";
 
 type Inputs = {
   name: string;
@@ -77,8 +78,7 @@ export const LoginForm = () => {
 
       <div className="mb-5">
         <label className={labelClass}>Password</label>
-        <input
-          type="password"
+        <PasswordInput
           placeholder="••••••••"
           autoComplete="current-password"
           className={inputClass}

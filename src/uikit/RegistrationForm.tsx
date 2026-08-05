@@ -1,12 +1,23 @@
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { AxiosError } from "axios";
 import { registerUser } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
+import { validatePassword } from "../utils/password";
+import {
+  formatPhoneInput,
+  normalizePhone,
+  validatePhone,
+  PHONE_PLACEHOLDER,
+  PHONE_PREFIX,
+} from "../utils/phone";
+import { PasswordInput } from "./PasswordInput";
+import { PasswordRequirements } from "./PasswordRequirements";
 
 type Inputs = {
   name: string;
+  phone: string;
   password: string;
   confirmPassword: string;
 };
@@ -24,9 +35,21 @@ export const RegistrationForm = () => {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
+    setValue,
     formState: { errors },
-  } = useForm<Inputs>();
+  } = useForm<Inputs>({
+    mode: "onTouched",
+    // The `+998(` prefix is part of the field from the start: it shows the
+    // expected format and keeps the country code out of the operator code.
+    defaultValues: { phone: PHONE_PREFIX },
+  });
+
+  const password = useWatch({ control, name: "password", defaultValue: "" });
+
+  // No `required` rule: the field is never empty thanks to the prefix, so the
+  // "is it filled in" check lives in validatePhone.
+  const phoneField = register("phone", { validate: validatePhone });
 
   const mutation = useMutation({
     mutationFn: registerUser,
@@ -37,7 +60,13 @@ export const RegistrationForm = () => {
   });
 
   const onSubmit = handleSubmit((values) => {
-    mutation.mutate({ name: values.name, password: values.password });
+    mutation.mutate({
+      name: values.name,
+      // Validation already guarantees the number parses, `?? values.phone`
+      // only keeps TypeScript happy.
+      phone: normalizePhone(values.phone) ?? values.phone,
+      password: values.password,
+    });
   });
 
   const serverError =
@@ -57,7 +86,7 @@ export const RegistrationForm = () => {
       <h1 className="text-center text-4xl font-bold tracking-wide text-white">
         Create account
       </h1>
-      <p className="mb-7 mt-1 text-center text-base text-grey">
+      <p className="mt-1 mb-7 text-center text-base text-grey">
         Join the mission control
       </p>
 
@@ -81,15 +110,45 @@ export const RegistrationForm = () => {
       </div>
 
       <div className="mb-5">
-        <label className={labelClass}>Password</label>
+        <label className={labelClass}>Phone</label>
         <input
-          type="password"
+          type="tel"
+          inputMode="tel"
+          placeholder={PHONE_PLACEHOLDER}
+          autoComplete="tel"
+          className={inputClass}
+          {...phoneField}
+          onChange={(event) => {
+            // Re-mask on every keystroke, then hand the field over to RHF.
+            event.target.value = formatPhoneInput(event.target.value);
+            phoneField.onChange(event);
+          }}
+          onBlur={(event) => {
+            // A pasted number keeps its own punctuation until the field is
+            // left — then a valid one snaps back to +998(99)9999999.
+            const normalized = normalizePhone(event.target.value);
+            if (normalized) {
+              setValue("phone", formatPhoneInput(normalized));
+            }
+            phoneField.onBlur(event);
+          }}
+        />
+        {errors.phone && (
+          <span className="mt-1 block text-sm text-error">
+            {errors.phone.message}
+          </span>
+        )}
+      </div>
+
+      <div className="mb-5">
+        <label className={labelClass}>Password</label>
+        <PasswordInput
           placeholder="••••••••"
           autoComplete="new-password"
           className={inputClass}
           {...register("password", {
             required: "Password is required",
-            minLength: { value: 6, message: "At least 6 characters" },
+            validate: validatePassword,
           })}
         />
         {errors.password && (
@@ -97,19 +156,18 @@ export const RegistrationForm = () => {
             {errors.password.message}
           </span>
         )}
+        <PasswordRequirements value={password} />
       </div>
 
       <div className="mb-5">
         <label className={labelClass}>Confirm password</label>
-        <input
-          type="password"
+        <PasswordInput
           placeholder="••••••••"
           autoComplete="new-password"
           className={inputClass}
           {...register("confirmPassword", {
             required: "Please confirm your password",
-            validate: (value) =>
-              value === watch("password") || "Passwords do not match",
+            validate: (value) => value === password || "Passwords do not match",
           })}
         />
         {errors.confirmPassword && (

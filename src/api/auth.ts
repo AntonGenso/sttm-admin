@@ -3,9 +3,14 @@ import type { AuthUser } from "../store/authStore";
 
 const BASE_URL = "/api/auth";
 
-export interface RegisterPayload {
+export interface LoginPayload {
   name: string;
   password: string;
+}
+
+/** Registration additionally requires a phone number; logging in does not. */
+export interface RegisterPayload extends LoginPayload {
+  phone: string;
 }
 
 export interface AuthResponse {
@@ -22,8 +27,6 @@ export const registerUser = async (
   );
   return data;
 };
-
-export type LoginPayload = RegisterPayload;
 
 export const loginUser = async (
   payload: LoginPayload,
