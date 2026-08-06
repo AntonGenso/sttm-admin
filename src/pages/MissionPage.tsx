@@ -1,47 +1,48 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMissions, createMission } from "../api/missions";
+import axios from "axios";
+import { deleteMission, getMissions } from "../api/missions";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import type { SubmitHandler } from "react-hook-form";
 import { MissionCard } from "../components/Missions/MissionCard";
+import { MissionFormModal } from "../components/Missions/MissionFormModal";
 import type { IMissionData } from "../types/missions";
+import { useAuthStore } from "../store/authStore";
 
-type Inputs = {
-  missionName: string;
-  attachment: FileList;
-};
+/** `undefined` — closed, `null` — creating, a number — editing that mission. */
+type ModalState = undefined | null | number;
 
 export default function MissionPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modal, setModal] = useState<ModalState>(undefined);
+
+  // Teachers get the read-only list; only admins may change missions. Hiding
+  // the controls is UX — the endpoints enforce the same rule server-side.
+  const isAdmin = useAuthStore((state) => state.hasRole("admin"));
 
   const queryClient = useQueryClient();
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm<Inputs>();
-
-  const fileList = watch("attachment");
-  const fileName = fileList?.[0]?.name;
-
-  const { data, error, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["missions"],
     queryFn: getMissions,
   });
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: createMission,
-    onSuccess: () => {
+  const {
+    mutate: removeMission,
+    isPending: isDeleting,
+    variables: deletingId,
+    error: deleteError,
+  } = useMutation({
+    mutationFn: deleteMission,
+    onSuccess: (_result, id) => {
       queryClient.invalidateQueries({ queryKey: ["missions"] });
-      setIsModalOpen(false);
-      reset();
+      queryClient.removeQueries({ queryKey: ["mission", id] });
     },
   });
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => mutate(data.missionName);
+  const deleteErrorMessage = axios.isAxiosError(deleteError)
+    ? ((deleteError.response?.data as { message?: string } | undefined)
+        ?.message ?? "Could not delete the mission")
+    : deleteError
+      ? "Could not delete the mission"
+      : null;
 
   return (
     <div className="h-full w-full">
@@ -51,89 +52,47 @@ export default function MissionPage() {
             Missions
           </h1>
           <p className="mt-1 text-xl text-grey">
-            Create and manage academy missions
+            {isAdmin
+              ? "Create and manage academy missions"
+              : "Academy missions available to your cadets"}
           </p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] px-6 py-2.5 text-lg font-bold text-white transition-opacity hover:opacity-85"
-        >
-          + Create mission
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => setModal(null)}
+            className="rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] px-6 py-2.5 text-lg font-bold text-white transition-opacity hover:opacity-85"
+          >
+            + Create mission
+          </button>
+        )}
       </div>
 
       {isLoading && <span className="text-lg text-grey">Loading...</span>}
+
+      {deleteErrorMessage && (
+        <p className="mb-4 text-lg text-error">{deleteErrorMessage}</p>
+      )}
 
       {data && (
         <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 laptop:grid-cols-4">
           {data.map((item: IMissionData) => (
             <li key={item.id}>
-              <MissionCard data={item} />
+              <MissionCard
+                data={item}
+                onEdit={isAdmin ? () => setModal(item.id) : undefined}
+                onDelete={isAdmin ? () => removeMission(item.id) : undefined}
+                isDeleting={isDeleting && deletingId === item.id}
+              />
             </li>
           ))}
         </ul>
       )}
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex w-full max-w-[480px] flex-col gap-5 rounded-2xl border border-cyan-bright/40 bg-[rgba(7,21,42,0.9)] p-7 backdrop-blur-xl"
-          >
-            <h2 className="text-3xl font-bold text-white">New mission</h2>
-
-            <label className="flex flex-col gap-1.5">
-              <span className="font-mono text-xs uppercase tracking-widest text-cyan-bright">
-                Mission name
-              </span>
-              <input
-                placeholder="e.g. First orbit"
-                className="w-full rounded-lg border border-cyan-bright/35 bg-[rgba(2,37,51,0.6)] px-4 py-3 text-lg text-white outline-none transition-colors placeholder:text-grey/50 focus:border-cyan-bright"
-                {...register("missionName", { required: true })}
-              />
-              {errors.missionName && (
-                <span className="text-sm text-error">
-                  This field is required
-                </span>
-              )}
-            </label>
-
-            <div className="flex items-center gap-3">
-              <label
-                htmlFor="attachment"
-                className="w-fit cursor-pointer rounded-full border border-cyan-bright/40 px-4 py-2 text-base text-cyan-bright transition-colors hover:bg-cyan-bright/10"
-              >
-                Upload file
-              </label>
-              <span className="text-base text-grey">
-                {fileName || "No file selected"}
-              </span>
-            </div>
-            <input
-              id="attachment"
-              type="file"
-              {...register("attachment")}
-              className="hidden"
-            />
-
-            <div className="mt-2 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="rounded-full border border-white/20 px-5 py-2 text-lg text-grey transition-colors hover:text-white"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] px-6 py-2 text-lg font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
-              >
-                {isPending ? "Adding..." : "Add mission"}
-              </button>
-            </div>
-          </form>
-        </div>
+      {isAdmin && modal !== undefined && (
+        <MissionFormModal
+          missionId={modal ?? undefined}
+          onClose={() => setModal(undefined)}
+        />
       )}
     </div>
   );
