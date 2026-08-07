@@ -1,0 +1,22 @@
+# Installed inside the builder stage; the host copy would overwrite it.
+node_modules
+
+# Build output — produced in the image, never copied into it.
+dist
+
+.git
+.gitignore
+.github
+
+.env
+.env.*
+
+Dockerfile*
+docker-compose*.yml
+nginx.prod.conf
+
+*.log
+npm-debug.log*
+.DS_Store
+.vscode
+.idea

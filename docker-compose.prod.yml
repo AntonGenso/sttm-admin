@@ -1,13 +1,32 @@
+# Pinned explicitly: Compose otherwise names the project after the directory,
+# and `--remove-orphans` would then treat containers of a neighbouring stack
+# (the student frontend, the backend) as orphans of this one.
+name: sttm-admin
+
 services:
-  sttm-admin:
-    container_name: sttm-admin-prod
+  admin:
+    container_name: sttm_admin_prod
+    # GITHUB_REPOSITORY=owner/repo, e.g. antongenso/sttm-admin. Set it in the
+    # .env next to this file on the server.
     image: ghcr.io/${GITHUB_REPOSITORY}:latest
+    # No `build:` — production runs the image CI published, it never compiles
+    # anything on the server.
     restart: unless-stopped
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
+    # Published on loopback: nginx on the host terminates TLS, serves this as
+    # the admin site and proxies /api/ to the backend on 5000.
     ports:
-      - "5173:80"
+      - "127.0.0.1:8080:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - prod
 
