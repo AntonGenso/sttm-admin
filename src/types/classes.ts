@@ -31,6 +31,66 @@ export interface IClass {
   students_count: number;
 }
 
+/** A student on the class roster, with the game totals the leaderboard ranks by. */
+export interface IClassStudent {
+  id: number;
+  name: string;
+  phone: string | null;
+  status: string;
+  joined_at: string;
+  head_id: number;
+  suit_id: number;
+  /** Sum of the best scores over missions. */
+  stars: number;
+  /** Sum of the best scores over tests. */
+  score: number;
+  /** stars + score — what the leaderboard is sorted by. */
+  total: number;
+}
+
+/** How far a student got with one mission or test. */
+export type ProgressStatus = "open" | "in_progress" | "done";
+
+/** A catalog item plus this student's progress on it; untouched items are `open`. */
+export interface IStudentProgressItem {
+  id: number;
+  name: string;
+  label: string | null;
+  xp: number;
+  /** Missions only — `current` or `bonuse`. */
+  type?: string;
+  /** Tests only. */
+  question_count?: number;
+  status: ProgressStatus;
+  best_score: number;
+  attempts: number;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+/** One logged run; `finished_at` is null while the attempt is still open. */
+export interface IStudentAttempt {
+  id: number;
+  kind: "mission" | "test";
+  item_id: number;
+  item_label: string | null;
+  score: number;
+  started_at: string;
+  finished_at: string | null;
+}
+
+/** The full teacher-facing record of one student in one class. */
+export interface IClassStudentDetails extends IClassStudent {
+  /** Place in this class's leaderboard; equal totals share a place. */
+  class_rank: number;
+  skin: { headId: number; suitId: number };
+  leaderboard: { stars: number; score: number; total: number };
+  missions: IStudentProgressItem[];
+  tests: IStudentProgressItem[];
+  /** The most recent runs, newest first. */
+  attempts: IStudentAttempt[];
+}
+
 export interface CreateClassPayload {
   cityId: number;
   schoolName: string;

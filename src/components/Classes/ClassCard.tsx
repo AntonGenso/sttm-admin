@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { rotateClassCode } from "../../api/classes";
 import type { IClass } from "../../types/classes";
@@ -38,7 +39,7 @@ export const ClassCard = ({ data }: Props) => {
   return (
     <div className="flex h-full flex-col gap-4 rounded-2xl border border-cyan-bright/25 bg-[rgba(5,20,30,0.7)] p-6 backdrop-blur-md">
       <div>
-        <span className="font-mono text-xs uppercase tracking-widest text-cyan-bright">
+        <span className="font-mono text-xs tracking-widest text-cyan-bright uppercase">
           {data.city_name}
         </span>
         <h3 className="mt-1 text-3xl font-semibold text-white">
@@ -46,10 +47,14 @@ export const ClassCard = ({ data }: Props) => {
           {data.letter}
         </h3>
         <p className="mt-1 text-lg text-grey">{data.school_name}</p>
+        <p className="text-lg text-grey">
+          {data.students_count}{" "}
+          {data.students_count === 1 ? "student" : "students"}
+        </p>
       </div>
 
       <div className="mt-auto flex flex-col gap-2">
-        <span className="font-mono text-xs uppercase tracking-widest text-grey">
+        <span className="font-mono text-xs tracking-widest text-grey uppercase">
           Join code
         </span>
         <div className="flex items-center gap-3">
@@ -66,11 +71,15 @@ export const ClassCard = ({ data }: Props) => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-white/10 pt-4">
-        <span className="text-lg text-grey">
-          {data.students_count}{" "}
-          {data.students_count === 1 ? "student" : "students"}
-        </span>
+      <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
+        {/* The card manages the code; the class page is where the teacher sees
+            who is in the class and how they rank. */}
+        <Link
+          to={`/classes/${data.id}`}
+          className="rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] px-5 py-1.5 text-base font-bold text-white transition-opacity hover:opacity-85"
+        >
+          Open →
+        </Link>
 
         {isConfirmingRotate ? (
           <div className="flex items-center gap-2">
