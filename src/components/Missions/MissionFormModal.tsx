@@ -16,8 +16,8 @@ type Inputs = {
   xp: string;
   type: MissionType;
   gameLink: string;
-  videoLink: string;
   cover: FileList;
+  video: FileList;
   documentRu: FileList;
   documentUz: FileList;
   teacherGuideRu: FileList;
@@ -32,6 +32,8 @@ interface Props {
 
 const DOCUMENT_ACCEPT = ".pdf,.doc,.docx,.ppt,.pptx";
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/avif";
+const VIDEO_ACCEPT =
+  "video/mp4,video/webm,video/ogg,video/quicktime,video/x-matroska";
 
 const fieldClass =
   "w-full rounded-lg border border-cyan-bright/35 bg-[rgba(2,37,51,0.6)] px-4 py-3 text-lg text-white outline-none transition-colors placeholder:text-grey/50 focus:border-cyan-bright";
@@ -51,6 +53,9 @@ const storedName = (
   switch (field) {
     case "cover":
       return mission.cover_url ? "Cover uploaded" : null;
+    case "video":
+      // The name is stored alongside the object; older rows only have the link.
+      return mission.video_name ?? (mission.video_url ? "Video uploaded" : null);
     case "documentRu":
       return mission.documents.ru.name;
     case "documentUz":
@@ -94,7 +99,6 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         xp: String(mission.xp ?? 0),
         type: (mission.type || "current") as MissionType,
         gameLink: mission.game_link ?? "",
-        videoLink: mission.video_link ?? "",
       });
     }
   }, [mission, reset]);
@@ -106,8 +110,8 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         xp: Number(values.xp) || 0,
         type: values.type,
         gameLink: values.gameLink?.trim() ?? "",
-        videoLink: values.videoLink?.trim() ?? "",
         cover: values.cover?.[0],
+        video: values.video?.[0],
         documentRu: values.documentRu?.[0],
         documentUz: values.documentUz?.[0],
         teacherGuideRu: values.teacherGuideRu?.[0],
@@ -187,6 +191,7 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
               step={1}
               className={fieldClass}
               {...register("xp", {
+                required: "This field is required",
                 min: { value: 0, message: "XP cannot be negative" },
               })}
             />
@@ -197,7 +202,10 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
 
           <label className="flex flex-1 flex-col gap-1.5">
             <span className={labelClass}>Type</span>
-            <select className={fieldClass} {...register("type")}>
+            <select
+              className={fieldClass}
+              {...register("type", { required: "This field is required" })}
+            >
               <option value="current" className="bg-bg-deep">
                 Current
               </option>
@@ -205,6 +213,9 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
                 Bonus
               </option>
             </select>
+            {errors.type && (
+              <span className="text-sm text-error">{errors.type.message}</span>
+            )}
           </label>
         </div>
 
@@ -217,19 +228,16 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
           />
         </label>
 
-        <label className="flex flex-col gap-1.5">
-          <span className={labelClass}>Video link</span>
-          <input
-            placeholder="https://..."
-            className={fieldClass}
-            {...register("videoLink")}
-          />
-        </label>
-
         <FileField
           label="Cover image"
           accept={IMAGE_ACCEPT}
           {...fileFieldProps("cover")}
+        />
+
+        <FileField
+          label="Video"
+          accept={VIDEO_ACCEPT}
+          {...fileFieldProps("video")}
         />
 
         <div className="border-t border-white/10 pt-4">
