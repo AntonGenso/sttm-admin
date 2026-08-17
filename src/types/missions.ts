@@ -21,32 +21,45 @@ export interface IMissionFile {
 }
 
 export interface IMissionDetails extends IMissionData {
-  /** Original name of the uploaded video file. */
-  video_name?: string | null;
+  /** Reward for the bonus part; the bonus exists when instruction files are set. */
+  bonus_xp: number;
+  /** Localized mission videos, public MinIO links. */
+  video: { ru: IMissionFile; uz: IMissionFile };
+  /** «Инструкция для ученика» — private, handed out by signed link. */
   documents: { ru: IMissionFile; uz: IMissionFile };
+  /** «Презентация» — private, handed out by signed link. */
   teacher_guide: { ru: IMissionFile; uz: IMissionFile };
+  /** «Конспект урока» — private, handed out by signed link. */
+  lesson_notes: { ru: IMissionFile; uz: IMissionFile };
 }
 
 /** Asset fields the edit form can clear on the server. */
 export type MissionAssetField =
   | "cover"
-  | "video"
+  | "videoRu"
+  | "videoUz"
   | "documentRu"
   | "documentUz"
   | "teacherGuideRu"
-  | "teacherGuideUz";
+  | "teacherGuideUz"
+  | "lessonNotesRu"
+  | "lessonNotesUz";
 
 export interface CreateMissionPayload {
   missionName: string;
   xp: number;
   type: MissionType;
   gameLink?: string;
+  bonusXp?: number;
   cover?: File;
-  video?: File;
+  videoRu?: File;
+  videoUz?: File;
   documentRu?: File;
   documentUz?: File;
   teacherGuideRu?: File;
   teacherGuideUz?: File;
+  lessonNotesRu?: File;
+  lessonNotesUz?: File;
 }
 
 /** Same fields, plus the files to drop; everything is optional on update. */

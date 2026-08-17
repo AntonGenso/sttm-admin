@@ -3,6 +3,7 @@ import LoginPage from "./pages/LoginPage";
 import { MainLayout } from "./components/Layout/MainLayout";
 import HomePage from "./pages/HomePage";
 import MissionPage from "./pages/MissionPage";
+import MissionDetailPage from "./pages/MissionDetailPage";
 import ClassPage from "./pages/ClassPage";
 import StudentPage from "./pages/StudentPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <HomePage /> },
           { path: "missions", element: <MissionPage /> },
+          { path: "missions/:id", element: <MissionDetailPage /> },
           { path: "classes/:id", element: <ClassPage /> },
           { path: "classes/:id/students/:studentId", element: <StudentPage /> },
         ],

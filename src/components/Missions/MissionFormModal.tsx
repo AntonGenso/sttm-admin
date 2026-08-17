@@ -5,23 +5,22 @@ import type { SubmitHandler } from "react-hook-form";
 import axios from "axios";
 import { createMission, getMission, updateMission } from "../../api/missions";
 import { FileField } from "./FileField";
-import type {
-  IMissionDetails,
-  MissionAssetField,
-  MissionType,
-} from "../../types/missions";
+import type { IMissionDetails, MissionAssetField } from "../../types/missions";
 
 type Inputs = {
   missionName: string;
   xp: string;
-  type: MissionType;
   gameLink: string;
+  bonusXp: string;
   cover: FileList;
-  video: FileList;
+  videoRu: FileList;
+  videoUz: FileList;
   documentRu: FileList;
   documentUz: FileList;
   teacherGuideRu: FileList;
   teacherGuideUz: FileList;
+  lessonNotesRu: FileList;
+  lessonNotesUz: FileList;
 };
 
 interface Props {
@@ -53,9 +52,10 @@ const storedName = (
   switch (field) {
     case "cover":
       return mission.cover_url ? "Cover uploaded" : null;
-    case "video":
-      // The name is stored alongside the object; older rows only have the link.
-      return mission.video_name ?? (mission.video_url ? "Video uploaded" : null);
+    case "videoRu":
+      return mission.video.ru.name;
+    case "videoUz":
+      return mission.video.uz.name;
     case "documentRu":
       return mission.documents.ru.name;
     case "documentUz":
@@ -64,8 +64,20 @@ const storedName = (
       return mission.teacher_guide.ru.name;
     case "teacherGuideUz":
       return mission.teacher_guide.uz.name;
+    case "lessonNotesRu":
+      return mission.lesson_notes.ru.name;
+    case "lessonNotesUz":
+      return mission.lesson_notes.uz.name;
   }
 };
+
+/** A mission carries a bonus when its instruction files or reward are set. */
+const missionHasBonus = (mission: IMissionDetails): boolean =>
+  Boolean(
+    mission.documents.ru.name ||
+      mission.documents.uz.name ||
+      (mission.bonus_xp ?? 0) > 0,
+  );
 
 export const MissionFormModal = ({ missionId, onClose }: Props) => {
   const isEdit = missionId !== undefined;
@@ -74,6 +86,9 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
   /** Stored files the admin asked to drop; sent as `remove` on submit. */
   const [removed, setRemoved] = useState<MissionAssetField[]>([]);
 
+  /** The bonus block (instruction + reward) is optional — one per mission. */
+  const [showBonus, setShowBonus] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -81,7 +96,7 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
     reset,
     formState: { errors },
   } = useForm<Inputs>({
-    defaultValues: { xp: "0", type: "current" },
+    defaultValues: { xp: "0", bonusXp: "0" },
   });
 
   const { data: mission, isLoading: isMissionLoading } = useQuery({
@@ -97,30 +112,53 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
       reset({
         missionName: mission.label,
         xp: String(mission.xp ?? 0),
-        type: (mission.type || "current") as MissionType,
         gameLink: mission.game_link ?? "",
+        bonusXp: String(mission.bonus_xp ?? 0),
       });
+      setShowBonus(missionHasBonus(mission));
     }
   }, [mission, reset]);
 
   const { mutate, isPending, error } = useMutation({
     mutationFn: (values: Inputs) => {
+      const bonusActive = showBonus;
+
       const payload = {
         missionName: values.missionName.trim(),
         xp: Number(values.xp) || 0,
-        type: values.type,
+        // The current/bonus split is gone; every mission is a "current" one
+        // that may carry a bonus. The column is kept for backward compatibility.
+        type: "current" as const,
         gameLink: values.gameLink?.trim() ?? "",
+        bonusXp: bonusActive ? Number(values.bonusXp) || 0 : 0,
         cover: values.cover?.[0],
-        video: values.video?.[0],
-        documentRu: values.documentRu?.[0],
-        documentUz: values.documentUz?.[0],
+        videoRu: values.videoRu?.[0],
+        videoUz: values.videoUz?.[0],
         teacherGuideRu: values.teacherGuideRu?.[0],
         teacherGuideUz: values.teacherGuideUz?.[0],
+        lessonNotesRu: values.lessonNotesRu?.[0],
+        lessonNotesUz: values.lessonNotesUz?.[0],
+        // The instruction files are the bonus payload — only sent while the
+        // bonus block is on.
+        documentRu: bonusActive ? values.documentRu?.[0] : undefined,
+        documentUz: bonusActive ? values.documentUz?.[0] : undefined,
       };
 
-      return isEdit
-        ? updateMission(missionId, { ...payload, remove: removed })
-        : createMission(payload);
+      if (!isEdit) {
+        return createMission(payload);
+      }
+
+      // Dropping the bonus clears its stored instruction files too.
+      const remove = [...removed];
+      if (!bonusActive) {
+        for (const field of ["documentRu", "documentUz"] as MissionAssetField[]) {
+          if (!remove.includes(field)) {
+            remove.push(field);
+          }
+        }
+      }
+
+      return updateMission(missionId, { ...payload, remove });
     },
     onSuccess: (saved) => {
       queryClient.invalidateQueries({ queryKey: ["missions"] });
@@ -182,42 +220,22 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
           )}
         </label>
 
-        <div className="flex gap-4">
-          <label className="flex flex-1 flex-col gap-1.5">
-            <span className={labelClass}>XP</span>
-            <input
-              type="number"
-              min={0}
-              step={1}
-              className={fieldClass}
-              {...register("xp", {
-                required: "This field is required",
-                min: { value: 0, message: "XP cannot be negative" },
-              })}
-            />
-            {errors.xp && (
-              <span className="text-sm text-error">{errors.xp.message}</span>
-            )}
-          </label>
-
-          <label className="flex flex-1 flex-col gap-1.5">
-            <span className={labelClass}>Type</span>
-            <select
-              className={fieldClass}
-              {...register("type", { required: "This field is required" })}
-            >
-              <option value="current" className="bg-bg-deep">
-                Current
-              </option>
-              <option value="bonuse" className="bg-bg-deep">
-                Bonus
-              </option>
-            </select>
-            {errors.type && (
-              <span className="text-sm text-error">{errors.type.message}</span>
-            )}
-          </label>
-        </div>
+        <label className="flex flex-col gap-1.5">
+          <span className={labelClass}>XP</span>
+          <input
+            type="number"
+            min={0}
+            step={1}
+            className={fieldClass}
+            {...register("xp", {
+              required: "This field is required",
+              min: { value: 0, message: "XP cannot be negative" },
+            })}
+          />
+          {errors.xp && (
+            <span className="text-sm text-error">{errors.xp.message}</span>
+          )}
+        </label>
 
         <label className="flex flex-col gap-1.5">
           <span className={labelClass}>Game link</span>
@@ -234,43 +252,109 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
           {...fileFieldProps("cover")}
         />
 
-        <FileField
-          label="Video"
-          accept={VIDEO_ACCEPT}
-          {...fileFieldProps("video")}
-        />
-
         <div className="border-t border-white/10 pt-4">
-          <span className="text-lg text-grey">Materials for students</span>
+          <span className="text-lg text-grey">Видео миссии</span>
         </div>
 
         <FileField
-          label="Document (RU)"
-          accept={DOCUMENT_ACCEPT}
-          {...fileFieldProps("documentRu")}
+          label="Видео (UZ)"
+          accept={VIDEO_ACCEPT}
+          {...fileFieldProps("videoUz")}
         />
         <FileField
-          label="Document (UZ)"
-          accept={DOCUMENT_ACCEPT}
-          {...fileFieldProps("documentUz")}
+          label="Видео (RU)"
+          accept={VIDEO_ACCEPT}
+          {...fileFieldProps("videoRu")}
         />
 
         <div className="border-t border-white/10 pt-4">
           <span className="text-lg text-grey">
-            Teacher guide — private, handed out by signed link
+            Презентация — private, handed out by signed link
           </span>
         </div>
 
         <FileField
-          label="Teacher guide (RU)"
-          accept={DOCUMENT_ACCEPT}
-          {...fileFieldProps("teacherGuideRu")}
-        />
-        <FileField
-          label="Teacher guide (UZ)"
+          label="Презентация (UZ)"
           accept={DOCUMENT_ACCEPT}
           {...fileFieldProps("teacherGuideUz")}
         />
+        <FileField
+          label="Презентация (RU)"
+          accept={DOCUMENT_ACCEPT}
+          {...fileFieldProps("teacherGuideRu")}
+        />
+
+        <div className="border-t border-white/10 pt-4">
+          <span className="text-lg text-grey">
+            Конспект урока — private, handed out by signed link
+          </span>
+        </div>
+
+        <FileField
+          label="Конспект урока (UZ)"
+          accept={DOCUMENT_ACCEPT}
+          {...fileFieldProps("lessonNotesUz")}
+        />
+        <FileField
+          label="Конспект урока (RU)"
+          accept={DOCUMENT_ACCEPT}
+          {...fileFieldProps("lessonNotesRu")}
+        />
+
+        {/* Bonus — optional, exactly one per mission. */}
+        {!showBonus ? (
+          <button
+            type="button"
+            onClick={() => setShowBonus(true)}
+            className="mt-2 w-fit rounded-full border border-[#22c55e]/50 bg-[#22c55e]/10 px-5 py-2 text-lg font-bold text-[#4ade80] transition-colors hover:bg-[#22c55e]/20"
+          >
+            + Add bonus
+          </button>
+        ) : (
+          <div className="flex flex-col gap-5 rounded-2xl border border-[#22c55e]/35 bg-[#22c55e]/5 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-lg font-bold text-[#4ade80]">
+                Бонусная миссия
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowBonus(false)}
+                className="text-base text-orange-bright transition-opacity hover:opacity-75"
+              >
+                Remove bonus
+              </button>
+            </div>
+
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>Bonus XP</span>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                className={fieldClass}
+                {...register("bonusXp", {
+                  min: { value: 0, message: "Bonus XP cannot be negative" },
+                })}
+              />
+              {errors.bonusXp && (
+                <span className="text-sm text-error">
+                  {errors.bonusXp.message}
+                </span>
+              )}
+            </label>
+
+            <FileField
+              label="Инструкция для ученика (UZ)"
+              accept={DOCUMENT_ACCEPT}
+              {...fileFieldProps("documentUz")}
+            />
+            <FileField
+              label="Инструкция для ученика (RU)"
+              accept={DOCUMENT_ACCEPT}
+              {...fileFieldProps("documentRu")}
+            />
+          </div>
+        )}
 
         {errorMessage && (
           <span className="text-base text-error">{errorMessage}</span>
