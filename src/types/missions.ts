@@ -9,7 +9,8 @@ export interface IMissionData {
   /** Public MinIO link to the mission cover; null while none is uploaded. */
   cover_url?: string | null;
   game_link?: string | null;
-  video_link?: string | null;
+  /** Public MinIO link to the mission video; null while none is uploaded. */
+  video_url?: string | null;
   picture?: string;
 }
 
@@ -20,6 +21,8 @@ export interface IMissionFile {
 }
 
 export interface IMissionDetails extends IMissionData {
+  /** Original name of the uploaded video file. */
+  video_name?: string | null;
   documents: { ru: IMissionFile; uz: IMissionFile };
   teacher_guide: { ru: IMissionFile; uz: IMissionFile };
 }
@@ -27,6 +30,7 @@ export interface IMissionDetails extends IMissionData {
 /** Asset fields the edit form can clear on the server. */
 export type MissionAssetField =
   | "cover"
+  | "video"
   | "documentRu"
   | "documentUz"
   | "teacherGuideRu"
@@ -37,8 +41,8 @@ export interface CreateMissionPayload {
   xp: number;
   type: MissionType;
   gameLink?: string;
-  videoLink?: string;
   cover?: File;
+  video?: File;
   documentRu?: File;
   documentUz?: File;
   teacherGuideRu?: File;
