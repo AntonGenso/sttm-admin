@@ -26,6 +26,8 @@ const LOCALE_LABEL: Record<"ru" | "uz", string> = {
 /** A signed link is short-lived, so it is opened, never stored — a new tab. */
 const openFile = (file: IMissionFile) => {
   if (file.url) {
+    // Адрес MinIO знает только бэкенд: с MINIO_BROWSER_PREFIX он уже отдаёт
+    // ссылку через прокси (`/uploads/...`), без него — абсолютную.
     window.open(file.url, "_blank", "noopener,noreferrer");
   }
 };
@@ -55,7 +57,7 @@ const LocaleButton = ({
       ].join(" ")}
     >
       <span className="font-medium">{LOCALE_LABEL[locale]}</span>
-      <span className="font-mono text-xs uppercase tracking-widest">
+      <span className="font-mono text-xs tracking-widest uppercase">
         {available ? actionLabel : "нет файла"}
       </span>
     </button>
@@ -69,8 +71,16 @@ const MaterialCard = ({ section }: { section: MaterialSection }) => (
       <p className="mt-1 text-base text-grey">{section.hint}</p>
     </div>
     <div className="mt-auto flex flex-col gap-2">
-      <LocaleButton locale="uz" file={section.uz} actionLabel={section.actionLabel} />
-      <LocaleButton locale="ru" file={section.ru} actionLabel={section.actionLabel} />
+      <LocaleButton
+        locale="uz"
+        file={section.uz}
+        actionLabel={section.actionLabel}
+      />
+      <LocaleButton
+        locale="ru"
+        file={section.ru}
+        actionLabel={section.actionLabel}
+      />
     </div>
   </div>
 );
@@ -94,8 +104,7 @@ export default function MissionDetailPage() {
   });
 
   const isMissing =
-    !isValidId ||
-    (axios.isAxiosError(error) && error.response?.status === 404);
+    !isValidId || (axios.isAxiosError(error) && error.response?.status === 404);
 
   if (isMissing) {
     return (
@@ -142,9 +151,9 @@ export default function MissionDetailPage() {
 
   const hasBonus = Boolean(
     mission &&
-      (mission.documents.ru.url ||
-        mission.documents.uz.url ||
-        (mission.bonus_xp ?? 0) > 0),
+    (mission.documents.ru.url ||
+      mission.documents.uz.url ||
+      (mission.bonus_xp ?? 0) > 0),
   );
 
   const bonusSection: MaterialSection | null = mission
@@ -193,7 +202,7 @@ export default function MissionDetailPage() {
                     </span>
                   )}
                   {hasBonus && (
-                    <span className="rounded-lg bg-gradient-to-b from-[#4ade80] to-[#22c55e] px-3 py-1 text-sm font-extrabold uppercase tracking-wider text-white shadow-[0_2px_8px_rgba(34,197,94,0.45)]">
+                    <span className="rounded-lg bg-gradient-to-b from-[#4ade80] to-[#22c55e] px-3 py-1 text-sm font-extrabold tracking-wider text-white uppercase shadow-[0_2px_8px_rgba(34,197,94,0.45)]">
                       + Bonus
                     </span>
                   )}
@@ -215,7 +224,7 @@ export default function MissionDetailPage() {
       </div>
 
       {mission && (
-        <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 laptop:grid-cols-3">
+        <section className="laptop:grid-cols-3 grid grid-cols-1 gap-5 sm:grid-cols-2">
           {sections.map((section) => (
             <MaterialCard key={section.title} section={section} />
           ))}
@@ -227,12 +236,12 @@ export default function MissionDetailPage() {
           <div className="flex items-center gap-3">
             <h2 className="text-3xl font-semibold text-white">Бонус</h2>
             {(mission.bonus_xp ?? 0) > 0 && (
-              <span className="rounded-lg bg-gradient-to-b from-[#4ade80] to-[#22c55e] px-3 py-1 font-mono text-sm font-extrabold uppercase tracking-wider text-white shadow-[0_2px_8px_rgba(34,197,94,0.45)]">
+              <span className="rounded-lg bg-gradient-to-b from-[#4ade80] to-[#22c55e] px-3 py-1 font-mono text-sm font-extrabold tracking-wider text-white uppercase shadow-[0_2px_8px_rgba(34,197,94,0.45)]">
                 +{mission.bonus_xp} XP
               </span>
             )}
           </div>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 laptop:grid-cols-3">
+          <div className="laptop:grid-cols-3 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <MaterialCard section={bonusSection} />
           </div>
         </section>
