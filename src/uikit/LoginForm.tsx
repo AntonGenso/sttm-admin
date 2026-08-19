@@ -30,7 +30,7 @@ export const LoginForm = () => {
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-      setAuth(data.token, data.user);
+      setAuth(data.token, data.refreshToken, data.user);
       navigate("/");
     },
   });

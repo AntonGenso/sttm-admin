@@ -54,7 +54,7 @@ export const RegistrationForm = () => {
   const mutation = useMutation({
     mutationFn: registerUser,
     onSuccess: (data) => {
-      setAuth(data.token, data.user);
+      setAuth(data.token, data.refreshToken, data.user);
       navigate("/");
     },
   });

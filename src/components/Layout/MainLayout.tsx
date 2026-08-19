@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import { logoutUser } from "../../api/auth";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
@@ -15,6 +16,12 @@ export const MainLayout = () => {
   const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = () => {
+    // Best-effort: revoke the refresh token server-side before clearing local
+    // state. We don't await it — logout should feel instant either way.
+    const { refreshToken } = useAuthStore.getState();
+    if (refreshToken) {
+      void logoutUser(refreshToken).catch(() => {});
+    }
     logout();
     navigate("/login");
   };
