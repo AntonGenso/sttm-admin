@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { createMission, getMission, updateMission } from "../../api/missions";
 import { FileField } from "./FileField";
@@ -80,6 +81,7 @@ const missionHasBonus = (mission: IMissionDetails): boolean =>
   );
 
 export const MissionFormModal = ({ missionId, onClose }: Props) => {
+  const { t } = useTranslation();
   const isEdit = missionId !== undefined;
   const queryClient = useQueryClient();
 
@@ -88,6 +90,9 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
 
   /** The bonus block (instruction + reward) is optional — one per mission. */
   const [showBonus, setShowBonus] = useState(false);
+
+  /** Whether the mission is visible to students; mirrors the card's eye toggle. */
+  const [isActive, setIsActive] = useState(true);
 
   const {
     register,
@@ -116,6 +121,7 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         bonusXp: String(mission.bonus_xp ?? 0),
       });
       setShowBonus(missionHasBonus(mission));
+      setIsActive(mission.is_active !== 0);
     }
   }, [mission, reset]);
 
@@ -129,6 +135,7 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         // The current/bonus split is gone; every mission is a "current" one
         // that may carry a bonus. The column is kept for backward compatibility.
         type: "current" as const,
+        isActive,
         gameLink: values.gameLink?.trim() ?? "",
         bonusXp: bonusActive ? Number(values.bonusXp) || 0 : 0,
         cover: values.cover?.[0],
@@ -183,11 +190,11 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
 
   const errorMessage = axios.isAxiosError(error)
     ? error.response?.status === 403
-      ? "Only an admin can change missions"
+      ? t("missionForm.adminOnly")
       : ((error.response?.data as { message?: string } | undefined)?.message ??
-        "Could not save the mission")
+        t("missionForm.saveError"))
     : error
-      ? "Could not save the mission"
+      ? t("missionForm.saveError")
       : null;
 
   return (
@@ -201,35 +208,76 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         className="flex max-h-[90vh] w-full max-w-[560px] flex-col gap-5 overflow-y-auto rounded-2xl border border-cyan-bright/40 bg-[rgba(7,21,42,0.9)] p-7 backdrop-blur-xl"
       >
         <h2 className="text-3xl font-bold text-white">
-          {isEdit ? "Edit mission" : "New mission"}
+          {isEdit ? t("missionForm.editTitle") : t("missionForm.newTitle")}
         </h2>
 
         {isEdit && isMissionLoading && (
-          <span className="text-lg text-grey">Loading...</span>
+          <span className="text-lg text-grey">{t("common.loading")}</span>
+        )}
+
+        {/* Visibility — the same flag as the eye toggle on the mission card. */}
+        {isEdit && (
+          <div
+            className={`flex items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${
+              isActive
+                ? "border-cyan-bright/35 bg-[rgba(2,37,51,0.4)]"
+                : "border-grey/25 bg-white/[0.03]"
+            }`}
+          >
+            <div className="flex flex-col">
+              <span className={labelClass}>{t("missionForm.visibility")}</span>
+              <span className="text-base text-grey">
+                {isActive
+                  ? t("missionForm.visibleToStudents")
+                  : t("missionForm.hiddenFromStudents")}
+              </span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isActive}
+              onClick={() => setIsActive((prev) => !prev)}
+              className={`relative h-7 w-12 shrink-0 rounded-full border transition-colors ${
+                isActive
+                  ? "border-cyan-bright/50 bg-cyan-bright/30"
+                  : "border-grey/40 bg-white/10"
+              }`}
+            >
+              <span
+                className={`absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full transition-all ${
+                  isActive
+                    ? "left-6 bg-cyan-bright"
+                    : "left-1 bg-grey"
+                }`}
+              />
+            </button>
+          </div>
         )}
 
         <label className="flex flex-col gap-1.5">
-          <span className={labelClass}>Mission name</span>
+          <span className={labelClass}>{t("missionForm.missionName")}</span>
           <input
-            placeholder="e.g. First orbit"
+            placeholder={t("missionForm.missionNamePlaceholder")}
             className={fieldClass}
             {...register("missionName", { required: true })}
           />
           {errors.missionName && (
-            <span className="text-sm text-error">This field is required</span>
+            <span className="text-sm text-error">
+              {t("missionForm.nameRequired")}
+            </span>
           )}
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className={labelClass}>XP</span>
+          <span className={labelClass}>{t("missionForm.xp")}</span>
           <input
             type="number"
             min={0}
             step={1}
             className={fieldClass}
             {...register("xp", {
-              required: "This field is required",
-              min: { value: 0, message: "XP cannot be negative" },
+              required: t("missionForm.nameRequired"),
+              min: { value: 0, message: t("missionForm.xpNegative") },
             })}
           />
           {errors.xp && (
@@ -238,7 +286,7 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className={labelClass}>Game link</span>
+          <span className={labelClass}>{t("missionForm.gameLink")}</span>
           <input
             placeholder="https://..."
             className={fieldClass}
@@ -247,56 +295,58 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         </label>
 
         <FileField
-          label="Cover image"
+          label={t("missionForm.coverImage")}
           accept={IMAGE_ACCEPT}
           {...fileFieldProps("cover")}
         />
 
         <div className="border-t border-white/10 pt-4">
-          <span className="text-lg text-grey">Видео миссии</span>
+          <span className="text-lg text-grey">
+            {t("missionForm.missionVideo")}
+          </span>
         </div>
 
         <FileField
-          label="Видео (UZ)"
+          label={t("missionForm.videoUz")}
           accept={VIDEO_ACCEPT}
           {...fileFieldProps("videoUz")}
         />
         <FileField
-          label="Видео (RU)"
+          label={t("missionForm.videoRu")}
           accept={VIDEO_ACCEPT}
           {...fileFieldProps("videoRu")}
         />
 
         <div className="border-t border-white/10 pt-4">
           <span className="text-lg text-grey">
-            Презентация — private, handed out by signed link
+            {t("missionForm.presentationSection")}
           </span>
         </div>
 
         <FileField
-          label="Презентация (UZ)"
+          label={t("missionForm.presentationUz")}
           accept={DOCUMENT_ACCEPT}
           {...fileFieldProps("teacherGuideUz")}
         />
         <FileField
-          label="Презентация (RU)"
+          label={t("missionForm.presentationRu")}
           accept={DOCUMENT_ACCEPT}
           {...fileFieldProps("teacherGuideRu")}
         />
 
         <div className="border-t border-white/10 pt-4">
           <span className="text-lg text-grey">
-            Конспект урока — private, handed out by signed link
+            {t("missionForm.notesSection")}
           </span>
         </div>
 
         <FileField
-          label="Конспект урока (UZ)"
+          label={t("missionForm.notesUz")}
           accept={DOCUMENT_ACCEPT}
           {...fileFieldProps("lessonNotesUz")}
         />
         <FileField
-          label="Конспект урока (RU)"
+          label={t("missionForm.notesRu")}
           accept={DOCUMENT_ACCEPT}
           {...fileFieldProps("lessonNotesRu")}
         />
@@ -308,32 +358,32 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
             onClick={() => setShowBonus(true)}
             className="mt-2 w-fit rounded-full border border-[#22c55e]/50 bg-[#22c55e]/10 px-5 py-2 text-lg font-bold text-[#4ade80] transition-colors hover:bg-[#22c55e]/20"
           >
-            + Add bonus
+            {t("missionForm.addBonus")}
           </button>
         ) : (
           <div className="flex flex-col gap-5 rounded-2xl border border-[#22c55e]/35 bg-[#22c55e]/5 p-5">
             <div className="flex items-center justify-between gap-3">
               <span className="text-lg font-bold text-[#4ade80]">
-                Бонусная миссия
+                {t("missionForm.bonusMission")}
               </span>
               <button
                 type="button"
                 onClick={() => setShowBonus(false)}
                 className="text-base text-orange-bright transition-opacity hover:opacity-75"
               >
-                Remove bonus
+                {t("missionForm.removeBonus")}
               </button>
             </div>
 
             <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>Bonus XP</span>
+              <span className={labelClass}>{t("missionForm.bonusXp")}</span>
               <input
                 type="number"
                 min={0}
                 step={1}
                 className={fieldClass}
                 {...register("bonusXp", {
-                  min: { value: 0, message: "Bonus XP cannot be negative" },
+                  min: { value: 0, message: t("missionForm.bonusXpNegative") },
                 })}
               />
               {errors.bonusXp && (
@@ -344,12 +394,12 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
             </label>
 
             <FileField
-              label="Инструкция для ученика (UZ)"
+              label={t("missionForm.instructionUz")}
               accept={DOCUMENT_ACCEPT}
               {...fileFieldProps("documentUz")}
             />
             <FileField
-              label="Инструкция для ученика (RU)"
+              label={t("missionForm.instructionRu")}
               accept={DOCUMENT_ACCEPT}
               {...fileFieldProps("documentRu")}
             />
@@ -366,7 +416,7 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
             onClick={onClose}
             className="rounded-full border border-white/20 px-5 py-2 text-lg text-grey transition-colors hover:text-white"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             type="submit"
@@ -374,10 +424,10 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
             className="rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] px-6 py-2 text-lg font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
           >
             {isPending
-              ? "Saving..."
+              ? t("missionForm.saving")
               : isEdit
-                ? "Save changes"
-                : "Add mission"}
+                ? t("missionForm.save")
+                : t("missionForm.add")}
           </button>
         </div>
       </form>

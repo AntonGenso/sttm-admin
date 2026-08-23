@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { IClassStudent } from "../../types/classes";
 
 interface Props {
@@ -11,6 +12,7 @@ type SortDirection = "asc" | "desc";
 
 /** The roster: who is in the class, findable by nickname. */
 export const ClassStudents = ({ classId, students }: Props) => {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [direction, setDirection] = useState<SortDirection>("asc");
 
@@ -34,7 +36,7 @@ export const ClassStudents = ({ classId, students }: Props) => {
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search by nickname"
+          placeholder={t("classes.searchPlaceholder")}
           className="min-w-[240px] flex-1 rounded-full border border-cyan-bright/25 bg-[rgba(5,20,30,0.7)] px-5 py-2 text-lg text-white placeholder:text-grey/70 focus:border-cyan-bright/60 focus:outline-none"
         />
 
@@ -43,13 +45,14 @@ export const ClassStudents = ({ classId, students }: Props) => {
           onClick={() => setDirection(direction === "asc" ? "desc" : "asc")}
           className="rounded-full border border-cyan-bright/40 px-5 py-2 text-base text-cyan-bright transition-colors hover:bg-cyan-bright/10"
         >
-          Nickname {direction === "asc" ? "A → Z" : "Z → A"}
+          {t("classes.sortNickname")}{" "}
+          {direction === "asc" ? t("classes.azAsc") : t("classes.azDesc")}
         </button>
       </div>
 
       {visible.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-white/15 bg-[rgba(5,20,30,0.5)] px-5 py-8 text-center text-lg text-grey backdrop-blur-md">
-          No cadet in this class matches “{query.trim()}”.
+          {t("classes.noMatch", { query: query.trim() })}
         </p>
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

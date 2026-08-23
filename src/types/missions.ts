@@ -6,6 +6,8 @@ export interface IMissionData {
   label: string;
   xp?: number;
   type?: MissionType | "";
+  /** 1 — visible to students, 0 — hidden. Admins see both. */
+  is_active?: number;
   /** Public MinIO link to the mission cover; null while none is uploaded. */
   cover_url?: string | null;
   game_link?: string | null;
@@ -49,6 +51,7 @@ export interface CreateMissionPayload {
   missionName: string;
   xp: number;
   type: MissionType;
+  isActive?: boolean;
   gameLink?: string;
   bonusXp?: number;
   cover?: File;

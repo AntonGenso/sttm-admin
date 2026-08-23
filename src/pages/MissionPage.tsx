@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { deleteMission, getMissions } from "../api/missions";
+import { useTranslation } from "react-i18next";
+import { deleteMission, getMissions, setMissionActive } from "../api/missions";
 import { useState } from "react";
 import { MissionCard } from "../components/Missions/MissionCard";
 import { MissionFormModal } from "../components/Missions/MissionFormModal";
@@ -12,6 +13,8 @@ type ModalState = undefined | null | number;
 
 export default function MissionPage() {
   const [modal, setModal] = useState<ModalState>(undefined);
+
+  const { t } = useTranslation();
 
   // Teachers get the read-only list; only admins may change missions. Hiding
   // the controls is UX — the endpoints enforce the same rule server-side.
@@ -37,11 +40,24 @@ export default function MissionPage() {
     },
   });
 
+  const {
+    mutate: toggleActive,
+    isPending: isTogglingActive,
+    variables: togglingVars,
+  } = useMutation({
+    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
+      setMissionActive(id, isActive),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ["missions"] });
+      queryClient.invalidateQueries({ queryKey: ["mission", updated.id] });
+    },
+  });
+
   const deleteErrorMessage = axios.isAxiosError(deleteError)
     ? ((deleteError.response?.data as { message?: string } | undefined)
-        ?.message ?? "Could not delete the mission")
+        ?.message ?? t("missions.deleteError"))
     : deleteError
-      ? "Could not delete the mission"
+      ? t("missions.deleteError")
       : null;
 
   return (
@@ -49,12 +65,12 @@ export default function MissionPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-5xl font-bold tracking-wide text-white">
-            Missions
+            {t("missions.title")}
           </h1>
           <p className="mt-1 text-xl text-grey">
             {isAdmin
-              ? "Create and manage academy missions"
-              : "Academy missions available to your cadets"}
+              ? t("missions.subtitleAdmin")
+              : t("missions.subtitleTeacher")}
           </p>
         </div>
         {isAdmin && (
@@ -62,12 +78,12 @@ export default function MissionPage() {
             onClick={() => setModal(null)}
             className="rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] px-6 py-2.5 text-lg font-bold text-white transition-opacity hover:opacity-85"
           >
-            + Create mission
+            {t("missions.create")}
           </button>
         )}
       </div>
 
-      {isLoading && <span className="text-lg text-grey">Loading...</span>}
+      {isLoading && <span className="text-lg text-grey">{t("common.loading")}</span>}
 
       {deleteErrorMessage && (
         <p className="mb-4 text-lg text-error">{deleteErrorMessage}</p>
@@ -82,6 +98,18 @@ export default function MissionPage() {
                 onEdit={isAdmin ? () => setModal(item.id) : undefined}
                 onDelete={isAdmin ? () => removeMission(item.id) : undefined}
                 isDeleting={isDeleting && deletingId === item.id}
+                onToggleActive={
+                  isAdmin
+                    ? () =>
+                        toggleActive({
+                          id: item.id,
+                          isActive: item.is_active === 0,
+                        })
+                    : undefined
+                }
+                isTogglingActive={
+                  isTogglingActive && togglingVars?.id === item.id
+                }
               />
             </li>
           ))}

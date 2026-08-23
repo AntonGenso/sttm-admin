@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getOverview } from "../../api/stats";
 import { StatTile } from "./StatTile";
 
@@ -7,6 +8,7 @@ import { StatTile } from "./StatTile";
  * the "create your first class" flow is a teacher-only view.
  */
 export const AdminDashboard = () => {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["stats", "overview"],
     queryFn: getOverview,
@@ -14,49 +16,51 @@ export const AdminDashboard = () => {
 
   const tiles = [
     {
-      label: "Teachers",
+      label: t("dashboard.teachers"),
       icon: "🧑‍🏫",
       value: data?.teachers,
-      hint: "Accounts with the teacher role",
+      hint: t("dashboard.teachersHint"),
     },
     {
-      label: "Students",
+      label: t("dashboard.students"),
       icon: "🧑‍🚀",
       value: data?.students,
-      hint: "Accounts with the student role",
+      hint: t("dashboard.studentsHint"),
     },
     {
-      label: "Missions",
+      label: t("dashboard.missions"),
       icon: "🚀",
       value: data?.missions,
-      hint: "Published across the academy",
+      hint: t("dashboard.missionsHint"),
     },
     {
-      label: "Classes",
+      label: t("dashboard.classes"),
       icon: "🛰️",
       value: data?.classes,
-      hint: "Created by teachers",
+      hint: t("dashboard.classesHint"),
     },
     {
-      label: "Schools",
+      label: t("dashboard.schools"),
       icon: "🏫",
       value: data?.schools,
-      hint: "Registered while creating classes",
+      hint: t("dashboard.schoolsHint"),
     },
     {
-      label: "In classes",
+      label: t("dashboard.inClasses"),
       icon: "🎟️",
       value: data?.enrollments,
-      hint: "Students who joined by code",
+      hint: t("dashboard.inClassesHint"),
     },
   ];
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-3xl font-semibold text-white">Academy at a glance</h2>
+      <h2 className="text-3xl font-semibold text-white">
+        {t("dashboard.glance")}
+      </h2>
 
       {isError && (
-        <p className="text-lg text-error">Could not load the statistics</p>
+        <p className="text-lg text-error">{t("dashboard.loadError")}</p>
       )}
 
       <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">

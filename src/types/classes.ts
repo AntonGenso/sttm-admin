@@ -92,13 +92,13 @@ export interface IClassStudentDetails extends IClassStudent {
 }
 
 export interface CreateClassPayload {
-  cityId: number;
+  cityName: string;
   schoolName: string;
   grade: number;
   letter: string;
 }
 
-export const CLASS_GRADES = [1, 2, 3, 4];
+export const CLASS_GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
-export const CYRILLIC_LETTERS = ["А", "Б", "В", "Г", "Д"];
-export const LATIN_LETTERS = ["A", "B", "C", "D", "E", "F", "G"];
+/** A single latin or cyrillic letter; alphabet is derived from which it is. */
+export const CLASS_LETTER_REGEX = /^[A-Za-zА-Яа-яЁё]$/;

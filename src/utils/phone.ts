@@ -7,7 +7,8 @@ const COUNTRY_CODE = "998";
 /** Always kept in the field, so the user only ever types the national part. */
 export const PHONE_PREFIX = `+${COUNTRY_CODE}(`;
 
-const PHONE_ERROR = `Enter a valid phone number in the ${PHONE_PLACEHOLDER} format`;
+/** i18n key; the caller translates it with the `{format}` param. */
+const PHONE_ERROR = "validation.phoneInvalid";
 
 /**
  * Digits of the national part.
@@ -59,10 +60,13 @@ export const normalizePhone = (value: string): string | null => {
   return digits.length === NATIONAL_LENGTH ? `+${COUNTRY_CODE}${digits}` : null;
 };
 
-/** react-hook-form validator: `true` when valid, otherwise the error message. */
+/**
+ * react-hook-form validator: `true` when valid, otherwise the i18n key of the
+ * error. The caller translates it (phoneInvalid takes a `{format}` param).
+ */
 export const validatePhone = (value: string): true | string => {
   if (!toNationalDigits(value)) {
-    return "Phone is required";
+    return "validation.phoneRequired";
   }
   return normalizePhone(value) ? true : PHONE_ERROR;
 };

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { IClassStudent } from "../../types/classes";
 
 interface Props {
@@ -25,15 +26,17 @@ const rankOf = (students: IClassStudent[], index: number): number => {
 };
 
 export const ClassLeaderboard = ({ classId, students }: Props) => {
+  const { t } = useTranslation();
+
   return (
     <div className="overflow-hidden rounded-2xl border border-cyan-bright/25 bg-[rgba(5,20,30,0.7)] backdrop-blur-md">
       {/* The header labels the four numeric columns the rows below repeat. */}
       <div className="grid grid-cols-[3rem_1fr_5rem_5rem_6rem] items-center gap-3 border-b border-white/10 px-5 py-3 font-mono text-xs tracking-widest text-grey uppercase">
-        <span>#</span>
-        <span>Cadet</span>
-        <span className="text-right">Stars</span>
-        <span className="text-right">Score</span>
-        <span className="text-right">Total</span>
+        <span>{t("classes.colRank")}</span>
+        <span>{t("classes.colCadet")}</span>
+        <span className="text-right">{t("classes.colStars")}</span>
+        <span className="text-right">{t("classes.colScore")}</span>
+        <span className="text-right">{t("classes.colTotal")}</span>
       </div>
 
       <ul>

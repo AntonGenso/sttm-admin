@@ -75,6 +75,12 @@ export const updateMission = async (
   return data;
 };
 
+/** Flip a mission's visibility without touching its other fields or files. */
+export const setMissionActive = async (
+  id: number,
+  isActive: boolean,
+): Promise<IMissionDetails> => updateMission(id, { isActive });
+
 export const deleteMission = async (id: number): Promise<void> => {
   await axios.delete(`${BASE_URL}/${id}`);
 };

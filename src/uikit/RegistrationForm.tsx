@@ -1,10 +1,16 @@
 import { useForm, useWatch } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { AxiosError } from "axios";
 import { registerUser } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
-import { validatePassword } from "../utils/password";
+import {
+  validatePassword,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
+} from "../utils/password";
+import { validateName, NAME_MIN_LENGTH } from "../utils/name";
 import {
   formatPhoneInput,
   normalizePhone,
@@ -30,6 +36,7 @@ const labelClass =
 
 export const RegistrationForm = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const {
@@ -61,7 +68,7 @@ export const RegistrationForm = () => {
 
   const onSubmit = handleSubmit((values) => {
     mutation.mutate({
-      name: values.name,
+      name: values.name.trim(),
       // Validation already guarantees the number parses, `?? values.phone`
       // only keeps TypeScript happy.
       phone: normalizePhone(values.phone) ?? values.phone,
@@ -72,9 +79,9 @@ export const RegistrationForm = () => {
   const serverError =
     mutation.error instanceof AxiosError
       ? ((mutation.error.response?.data as { message?: string })?.message ??
-        "Something went wrong")
+        t("auth.genericError"))
       : mutation.error
-        ? "Something went wrong"
+        ? t("auth.genericError")
         : null;
 
   return (
@@ -84,33 +91,33 @@ export const RegistrationForm = () => {
       className="w-full max-w-[360px] rounded-2xl border border-cyan-bright/40 bg-[rgba(7,21,42,0.75)] p-8 shadow-[0_0_40px_rgba(0,227,255,0.12)] backdrop-blur-xl"
     >
       <h1 className="text-center text-4xl font-bold tracking-wide text-white">
-        Create account
+        {t("auth.registerTitle")}
       </h1>
       <p className="mt-1 mb-7 text-center text-base text-grey">
-        Join the mission control
+        {t("auth.registerSubtitle")}
       </p>
 
       <div className="mb-5">
-        <label className={labelClass}>Name</label>
+        <label className={labelClass}>{t("auth.fieldName")}</label>
         <input
           type="text"
-          placeholder="Your callsign"
+          placeholder={t("auth.placeholderNameExample")}
           autoComplete="username"
           className={inputClass}
           {...register("name", {
-            required: "Name is required",
-            minLength: { value: 3, message: "At least 3 characters" },
+            required: "validation.nameRequired",
+            validate: validateName,
           })}
         />
         {errors.name && (
           <span className="mt-1 block text-sm text-error">
-            {errors.name.message}
+            {t(errors.name.message ?? "", { min: NAME_MIN_LENGTH })}
           </span>
         )}
       </div>
 
       <div className="mb-5">
-        <label className={labelClass}>Phone</label>
+        <label className={labelClass}>{t("auth.fieldPhone")}</label>
         <input
           type="tel"
           inputMode="tel"
@@ -135,44 +142,48 @@ export const RegistrationForm = () => {
         />
         {errors.phone && (
           <span className="mt-1 block text-sm text-error">
-            {errors.phone.message}
+            {t(errors.phone.message ?? "", { format: PHONE_PLACEHOLDER })}
           </span>
         )}
       </div>
 
       <div className="mb-5">
-        <label className={labelClass}>Password</label>
+        <label className={labelClass}>{t("auth.fieldPassword")}</label>
         <PasswordInput
           placeholder="••••••••"
           autoComplete="new-password"
           className={inputClass}
           {...register("password", {
-            required: "Password is required",
+            required: "validation.passwordRequired",
             validate: validatePassword,
           })}
         />
         {errors.password && (
           <span className="mt-1 block text-sm text-error">
-            {errors.password.message}
+            {t(errors.password.message ?? "", {
+              min: PASSWORD_MIN_LENGTH,
+              max: PASSWORD_MAX_LENGTH,
+            })}
           </span>
         )}
         <PasswordRequirements value={password} />
       </div>
 
       <div className="mb-5">
-        <label className={labelClass}>Confirm password</label>
+        <label className={labelClass}>{t("auth.fieldConfirm")}</label>
         <PasswordInput
           placeholder="••••••••"
           autoComplete="new-password"
           className={inputClass}
           {...register("confirmPassword", {
-            required: "Please confirm your password",
-            validate: (value) => value === password || "Passwords do not match",
+            required: "validation.confirmRequired",
+            validate: (value) =>
+              value === password || "validation.passwordsMismatch",
           })}
         />
         {errors.confirmPassword && (
           <span className="mt-1 block text-sm text-error">
-            {errors.confirmPassword.message}
+            {t(errors.confirmPassword.message ?? "")}
           </span>
         )}
       </div>
@@ -186,13 +197,13 @@ export const RegistrationForm = () => {
         disabled={mutation.isPending}
         className="w-full rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] py-3 text-xl font-bold text-white transition-opacity hover:opacity-85 active:opacity-70 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {mutation.isPending ? "Registering..." : "Register"}
+        {mutation.isPending ? t("auth.registering") : t("auth.registerSubmit")}
       </button>
 
       <p className="mt-5 text-center text-base text-grey">
-        Already have an account?{" "}
+        {t("auth.haveAccount")}{" "}
         <Link to="/login" className="text-cyan-bright hover:underline">
-          Log in
+          {t("auth.loginLink")}
         </Link>
       </p>
     </form>

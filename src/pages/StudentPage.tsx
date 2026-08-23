@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { getClassStudent, removeClassStudent } from "../api/classes";
 import { StatTile } from "../components/Dashboard/StatTile";
@@ -8,6 +9,7 @@ import { StudentProgressList } from "../components/Classes/StudentProgressList";
 import { formatDate, formatDateTime } from "../utils/date";
 
 export default function StudentPage() {
+  const { t } = useTranslation();
   const { id, studentId } = useParams();
   const classId = Number(id);
   const cadetId = Number(studentId);
@@ -50,9 +52,9 @@ export default function StudentPage() {
 
   const removeErrorMessage = axios.isAxiosError(removeError)
     ? ((removeError.response?.data as { message?: string } | undefined)
-        ?.message ?? "Could not remove the student")
+        ?.message ?? t("student.removeError"))
     : removeError
-      ? "Could not remove the student"
+      ? t("student.removeError")
       : null;
 
   // A student outside the teacher's classes comes back as a 404, same as a
@@ -67,16 +69,14 @@ export default function StudentPage() {
     return (
       <div className="flex flex-col items-start gap-4">
         <h1 className="text-5xl font-bold tracking-wide text-white">
-          Student not found
+          {t("student.notFound")}
         </h1>
-        <p className="text-xl text-grey">
-          They may have left the class, or they belong to another teacher.
-        </p>
+        <p className="text-xl text-grey">{t("student.notFoundDesc")}</p>
         <Link
           to={backLink}
           className="rounded-full border border-cyan-bright/40 px-5 py-2 text-lg text-cyan-bright transition-colors hover:bg-cyan-bright/10"
         >
-          Back to the class
+          {t("student.backToClass")}
         </Link>
       </div>
     );
@@ -89,13 +89,13 @@ export default function StudentPage() {
           to={backLink}
           className="w-fit font-mono text-xs tracking-widest text-cyan-bright uppercase transition-opacity hover:opacity-75"
         >
-          ← Back to class
+          {t("student.back")}
         </Link>
 
-        {isLoading && <span className="text-lg text-grey">Loading...</span>}
+        {isLoading && <span className="text-lg text-grey">{t("common.loading")}</span>}
 
         {error && !isMissing && (
-          <p className="text-lg text-error">Could not load the student</p>
+          <p className="text-lg text-error">{t("student.loadError")}</p>
         )}
 
         {data && (
@@ -105,9 +105,9 @@ export default function StudentPage() {
                 {data.name}
               </h1>
               <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xl text-grey">
-                <span>Joined {formatDate(data.joined_at)}</span>
+                <span>{t("student.joined", { date: formatDate(data.joined_at) })}</span>
                 <span aria-hidden>·</span>
-                <span>{data.phone ?? "No phone"}</span>
+                <span>{data.phone ?? t("student.noPhone")}</span>
                 {data.status !== "active" && (
                   <>
                     <span aria-hidden>·</span>
@@ -122,8 +122,7 @@ export default function StudentPage() {
             {isConfirmingRemove ? (
               <div className="flex max-w-[340px] flex-col items-end gap-2">
                 <p className="text-right text-base text-grey">
-                  Remove {data.name} from the class? Their progress is kept —
-                  they can join another class with its code.
+                  {t("student.removeConfirm", { name: data.name })}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -131,7 +130,7 @@ export default function StudentPage() {
                     onClick={() => setIsConfirmingRemove(false)}
                     className="rounded-full border border-white/20 px-4 py-1.5 text-base text-grey transition-colors hover:text-white"
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </button>
                   <button
                     type="button"
@@ -139,7 +138,7 @@ export default function StudentPage() {
                     disabled={isRemoving}
                     className="rounded-full bg-orange-bright/90 px-4 py-1.5 text-base font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
                   >
-                    {isRemoving ? "Removing..." : "Remove"}
+                    {isRemoving ? t("common.removing") : t("common.remove")}
                   </button>
                 </div>
               </div>
@@ -149,7 +148,7 @@ export default function StudentPage() {
                 onClick={() => setIsConfirmingRemove(true)}
                 className="rounded-full border border-orange-bright/40 px-5 py-2 text-lg text-orange-bright transition-colors hover:bg-orange-bright/10"
               >
-                Remove from class
+                {t("student.removeFromClass")}
               </button>
             )}
           </div>
@@ -165,58 +164,58 @@ export default function StudentPage() {
           <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
             <li>
               <StatTile
-                label="Rank"
+                label={t("student.rank")}
                 icon="🏅"
                 value={data.class_rank}
-                hint="Place in this class"
+                hint={t("student.rankHint")}
               />
             </li>
             <li>
               <StatTile
-                label="Total"
+                label={t("student.total")}
                 icon="⚡"
                 value={data.leaderboard.total}
-                hint="Stars plus score"
+                hint={t("student.totalHint")}
               />
             </li>
             <li>
               <StatTile
-                label="Stars"
+                label={t("student.stars")}
                 icon="⭐"
                 value={data.leaderboard.stars}
-                hint="Earned across missions"
+                hint={t("student.starsHint")}
               />
             </li>
             <li>
               <StatTile
-                label="Score"
+                label={t("student.score")}
                 icon="🧪"
                 value={data.leaderboard.score}
-                hint="Earned across tests"
+                hint={t("student.scoreHint")}
               />
             </li>
           </ul>
 
           <StudentProgressList
-            title="Missions"
+            title={t("student.missions")}
             items={data.missions}
-            emptyHint="There are no missions in the academy yet."
+            emptyHint={t("student.missionsEmpty")}
           />
 
           <StudentProgressList
-            title="Tests"
+            title={t("student.tests")}
             items={data.tests}
-            emptyHint="There are no tests in the academy yet."
+            emptyHint={t("student.testsEmpty")}
           />
 
           <section className="flex flex-col gap-4">
             <h2 className="text-3xl font-semibold text-white">
-              Recent activity
+              {t("student.recentActivity")}
             </h2>
 
             {data.attempts.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-white/15 bg-[rgba(5,20,30,0.5)] px-5 py-8 text-center text-lg text-grey backdrop-blur-md">
-                This cadet has not started anything yet.
+                {t("student.noActivity")}
               </p>
             ) : (
               <ul className="overflow-hidden rounded-2xl border border-cyan-bright/25 bg-[rgba(5,20,30,0.7)] backdrop-blur-md">
@@ -238,7 +237,7 @@ export default function StudentPage() {
                       {/* An attempt with no finish is one the cadet is in right
                           now, or one they abandoned — either way it has no score. */}
                       <p className="font-mono text-lg text-cyan-bright">
-                        {attempt.finished_at ? attempt.score : "In progress"}
+                        {attempt.finished_at ? attempt.score : t("student.inProgress")}
                       </p>
                       <span className="text-base text-grey">
                         {formatDateTime(

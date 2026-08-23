@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { rotateClassCode } from "../../api/classes";
 import type { IClass } from "../../types/classes";
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export const ClassCard = ({ data }: Props) => {
+  const { t } = useTranslation();
   const [isCopied, setIsCopied] = useState(false);
   const [isConfirmingRotate, setIsConfirmingRotate] = useState(false);
 
@@ -48,14 +50,13 @@ export const ClassCard = ({ data }: Props) => {
         </h3>
         <p className="mt-1 text-lg text-grey">{data.school_name}</p>
         <p className="text-lg text-grey">
-          {data.students_count}{" "}
-          {data.students_count === 1 ? "student" : "students"}
+          {t("classes.student", { count: data.students_count })}
         </p>
       </div>
 
       <div className="mt-auto flex flex-col gap-2">
         <span className="font-mono text-xs tracking-widest text-grey uppercase">
-          Join code
+          {t("classes.joinCode")}
         </span>
         <div className="flex items-center gap-3">
           <span className="rounded-lg border border-cyan-bright/30 bg-[rgba(2,37,51,0.6)] px-4 py-2 font-mono text-2xl tracking-[0.3em] text-cyan-bright">
@@ -66,7 +67,7 @@ export const ClassCard = ({ data }: Props) => {
             onClick={handleCopy}
             className="rounded-full border border-cyan-bright/40 px-4 py-1.5 text-base text-cyan-bright transition-colors hover:bg-cyan-bright/10"
           >
-            {isCopied ? "Copied" : "Copy"}
+            {isCopied ? t("classes.copied") : t("classes.copy")}
           </button>
         </div>
       </div>
@@ -78,7 +79,7 @@ export const ClassCard = ({ data }: Props) => {
           to={`/classes/${data.id}`}
           className="rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] px-5 py-1.5 text-base font-bold text-white transition-opacity hover:opacity-85"
         >
-          Open →
+          {t("classes.open")}
         </Link>
 
         {isConfirmingRotate ? (
@@ -88,7 +89,7 @@ export const ClassCard = ({ data }: Props) => {
               onClick={() => setIsConfirmingRotate(false)}
               className="rounded-full border border-white/20 px-4 py-1.5 text-base text-grey transition-colors hover:text-white"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
             <button
               type="button"
@@ -96,7 +97,7 @@ export const ClassCard = ({ data }: Props) => {
               disabled={isPending}
               className="rounded-full bg-orange-bright/90 px-4 py-1.5 text-base font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
             >
-              {isPending ? "Changing..." : "Confirm"}
+              {isPending ? t("classes.changing") : t("common.confirm")}
             </button>
           </div>
         ) : (
@@ -105,16 +106,13 @@ export const ClassCard = ({ data }: Props) => {
             onClick={() => setIsConfirmingRotate(true)}
             className="rounded-full border border-orange-bright/40 px-4 py-1.5 text-base text-orange-bright transition-colors hover:bg-orange-bright/10"
           >
-            Change code
+            {t("classes.changeCode")}
           </button>
         )}
       </div>
 
       {isConfirmingRotate && (
-        <p className="text-base text-grey">
-          The old code stops working. Students who already joined stay in the
-          class — only new joins need the new code.
-        </p>
+        <p className="text-base text-grey">{t("classes.rotateWarning")}</p>
       )}
     </div>
   );

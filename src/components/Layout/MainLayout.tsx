@@ -1,6 +1,8 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../store/authStore";
 import { logoutUser } from "../../api/auth";
+import { LanguageSwitcher } from "../../uikit/LanguageSwitcher";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
@@ -12,6 +14,7 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 export const MainLayout = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
@@ -36,21 +39,22 @@ export const MainLayout = () => {
             </span>
             <nav className="flex items-center gap-2">
               <NavLink to="/" end className={navLinkClass}>
-                Home
+                {t("nav.home")}
               </NavLink>
               <NavLink to="/missions" className={navLinkClass}>
-                Missions
+                {t("nav.missions")}
               </NavLink>
             </nav>
           </div>
 
           <div className="flex items-center gap-4">
+            <LanguageSwitcher />
             {user && <span className="text-lg text-grey">{user.name}</span>}
             <button
               onClick={handleLogout}
               className="rounded-full border border-cyan-bright/40 px-4 py-1.5 text-base text-cyan-bright transition-colors hover:bg-cyan-bright/10"
             >
-              Log out
+              {t("auth.logout")}
             </button>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { UseFormRegisterReturn } from "react-hook-form";
 
 interface Props {
@@ -24,14 +25,21 @@ export const FileField = ({
   onRemove,
   onRestore,
 }: Props) => {
+  const { t } = useTranslation();
+
   // A newly picked file wins over whatever is stored: it replaces it on submit.
   const status = fileName
     ? { text: fileName, tone: "text-white" }
     : isRemoved
-      ? { text: `${existingName ?? "File"} — will be removed`, tone: "text-error" }
+      ? {
+          text: t("fileField.willBeRemoved", {
+            name: existingName ?? t("fileField.fallbackName"),
+          }),
+          tone: "text-error",
+        }
       : existingName
         ? { text: existingName, tone: "text-grey" }
-        : { text: "No file selected", tone: "text-grey" };
+        : { text: t("fileField.noFile"), tone: "text-grey" };
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -43,7 +51,7 @@ export const FileField = ({
           htmlFor={registration.name}
           className="w-fit shrink-0 cursor-pointer rounded-full border border-cyan-bright/40 px-4 py-2 text-base text-cyan-bright transition-colors hover:bg-cyan-bright/10"
         >
-          {existingName && !isRemoved ? "Replace" : "Choose file"}
+          {existingName && !isRemoved ? t("fileField.replace") : t("fileField.choose")}
         </label>
         <span className={`truncate text-base ${status.tone}`} title={status.text}>
           {status.text}
@@ -55,7 +63,7 @@ export const FileField = ({
             onClick={onRemove}
             className="ml-auto shrink-0 text-base text-orange-bright transition-opacity hover:opacity-75"
           >
-            Remove
+            {t("fileField.remove")}
           </button>
         )}
         {isRemoved && onRestore && (
@@ -64,7 +72,7 @@ export const FileField = ({
             onClick={onRestore}
             className="ml-auto shrink-0 text-base text-cyan-bright transition-opacity hover:opacity-75"
           >
-            Undo
+            {t("fileField.undo")}
           </button>
         )}
       </div>

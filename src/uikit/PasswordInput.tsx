@@ -1,4 +1,5 @@
 import { forwardRef, useState, type InputHTMLAttributes } from "react";
+import { useTranslation } from "react-i18next";
 
 const EyeIcon = ({ crossed }: { crossed: boolean }) => (
   <svg
@@ -35,6 +36,7 @@ type PasswordInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type">;
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ className = "", ...props }, ref) => {
     const [isVisible, setIsVisible] = useState(false);
+    const { t } = useTranslation();
 
     return (
       <div className="relative">
@@ -47,7 +49,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
         <button
           type="button"
           onClick={() => setIsVisible((visible) => !visible)}
-          aria-label={isVisible ? "Hide password" : "Show password"}
+          aria-label={isVisible ? t("auth.hidePassword") : t("auth.showPassword")}
           aria-pressed={isVisible}
           className="absolute top-1/2 right-3 -translate-y-1/2 rounded p-1 text-cyan-bright/60 transition-colors hover:text-cyan-bright focus-visible:outline focus-visible:outline-1 focus-visible:outline-cyan-bright"
         >
