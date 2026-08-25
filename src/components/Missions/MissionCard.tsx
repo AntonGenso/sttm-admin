@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { IMissionData } from "@/types/missions";
 import missionDefaultCover from "@/assets/mission-default.svg";
+import { toAssetUrl } from "@/utils/assetUrl";
 
 interface Props {
   data: IMissionData;
@@ -94,7 +95,7 @@ export const MissionCard = ({
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[rgba(2,37,51,0.6)]">
             <img
-              src={data.cover_url ?? data.picture ?? missionDefaultCover}
+              src={toAssetUrl(data.cover_url) || data.picture || missionDefaultCover}
               alt={data.label}
               className="h-full w-full object-cover"
             />

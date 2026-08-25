@@ -8,6 +8,7 @@ import { MissionFormModal } from "../components/Missions/MissionFormModal";
 import { useAuthStore } from "../store/authStore";
 import missionDefaultCover from "../assets/mission-default.svg";
 import type { IMissionFile } from "../types/missions";
+import { toAssetUrl } from "@/utils/assetUrl";
 
 /** One localized material section rendered as a card with RU/UZ open buttons. */
 interface MaterialSection {
@@ -178,7 +179,7 @@ export default function MissionDetailPage() {
             <div className="flex items-center gap-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[rgba(2,37,51,0.6)]">
                 <img
-                  src={mission.cover_url ?? missionDefaultCover}
+                  src={toAssetUrl(mission.cover_url) || missionDefaultCover}
                   alt={mission.label}
                   className="h-full w-full object-cover"
                 />
