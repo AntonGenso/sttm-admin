@@ -1,17 +1,36 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { createMission, getMission, updateMission } from "../../api/missions";
 import { FileField } from "./FileField";
-import type { IMissionDetails, MissionAssetField } from "../../types/missions";
+import type {
+  IMissionDetails,
+  MissionAssetField,
+  MissionFactInput,
+} from "../../types/missions";
+
+/** One row of the facts repeater. */
+type FactInput = {
+  /** Set for a fact that is already stored; absent for a freshly added one. */
+  id?: number;
+  titleRu: string;
+  titleUz: string;
+  descriptionRu: string;
+  descriptionUz: string;
+  image: FileList;
+  /** Picture already stored, kept unless a new one is picked or it is dropped. */
+  existingImage?: string | null;
+};
 
 type Inputs = {
   missionName: string;
   xp: string;
+  level: string;
   gameLink: string;
+  facts: FactInput[];
   bonusXp: string;
   cover: FileList;
   videoRu: FileList;
@@ -76,8 +95,8 @@ const storedName = (
 const missionHasBonus = (mission: IMissionDetails): boolean =>
   Boolean(
     mission.documents.ru.name ||
-      mission.documents.uz.name ||
-      (mission.bonus_xp ?? 0) > 0,
+    mission.documents.uz.name ||
+    (mission.bonus_xp ?? 0) > 0,
   );
 
 export const MissionFormModal = ({ missionId, onClose }: Props) => {
@@ -99,10 +118,14 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
     handleSubmit,
     watch,
     reset,
+    control,
+    setValue,
     formState: { errors },
   } = useForm<Inputs>({
-    defaultValues: { xp: "0", bonusXp: "0" },
+    defaultValues: { xp: "0", level: "1", bonusXp: "0", facts: [] },
   });
+
+  const facts = useFieldArray({ control, name: "facts" });
 
   const { data: mission, isLoading: isMissionLoading } = useQuery({
     queryKey: ["mission", missionId],
@@ -117,8 +140,18 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
       reset({
         missionName: mission.label,
         xp: String(mission.xp ?? 0),
+        level: String(mission.level ?? 0),
         gameLink: mission.game_link ?? "",
         bonusXp: String(mission.bonus_xp ?? 0),
+        facts: (mission.facts ?? []).map((fact) => ({
+          id: fact.id,
+          titleRu: fact.title.ru,
+          titleUz: fact.title.uz ?? "",
+          descriptionRu: fact.description.ru,
+          descriptionUz: fact.description.uz ?? "",
+          image: undefined as unknown as FileList,
+          existingImage: fact.image_url,
+        })),
       });
       setShowBonus(missionHasBonus(mission));
       setIsActive(mission.is_active !== 0);
@@ -129,9 +162,22 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
     mutationFn: (values: Inputs) => {
       const bonusActive = showBonus;
 
+      // The list is authoritative: a fact missing from it is deleted server-side.
+      const factPayload: MissionFactInput[] = values.facts.map((fact) => ({
+        id: fact.id,
+        titleRu: fact.titleRu.trim(),
+        titleUz: fact.titleUz?.trim(),
+        descriptionRu: fact.descriptionRu.trim(),
+        descriptionUz: fact.descriptionUz?.trim(),
+        image: fact.image?.[0],
+        keepImage: Boolean(fact.existingImage),
+      }));
+
       const payload = {
         missionName: values.missionName.trim(),
         xp: Number(values.xp) || 0,
+        level: Number(values.level) || 0,
+        facts: factPayload,
         // The current/bonus split is gone; every mission is a "current" one
         // that may carry a bonus. The column is kept for backward compatibility.
         type: "current" as const,
@@ -158,7 +204,10 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
       // Dropping the bonus clears its stored instruction files too.
       const remove = [...removed];
       if (!bonusActive) {
-        for (const field of ["documentRu", "documentUz"] as MissionAssetField[]) {
+        for (const field of [
+          "documentRu",
+          "documentUz",
+        ] as MissionAssetField[]) {
           if (!remove.includes(field)) {
             remove.push(field);
           }
@@ -245,9 +294,7 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
             >
               <span
                 className={`absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full transition-all ${
-                  isActive
-                    ? "left-6 bg-cyan-bright"
-                    : "left-1 bg-grey"
+                  isActive ? "left-6 bg-cyan-bright" : "left-1 bg-grey"
                 }`}
               />
             </button>
@@ -282,6 +329,23 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
           />
           {errors.xp && (
             <span className="text-sm text-error">{errors.xp.message}</span>
+          )}
+        </label>
+
+        {/* Number of the mission in the game; its bonus card repeats it. */}
+        <label className="flex flex-col gap-1.5">
+          <span className={labelClass}>{t("missionForm.level")}</span>
+          <input
+            type="number"
+            min={0}
+            step={1}
+            className={fieldClass}
+            {...register("level", {
+              min: { value: 0, message: t("missionForm.levelNegative") },
+            })}
+          />
+          {errors.level && (
+            <span className="text-sm text-error">{errors.level.message}</span>
           )}
         </label>
 
@@ -350,6 +414,113 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
           accept={DOCUMENT_ACCEPT}
           {...fileFieldProps("lessonNotesRu")}
         />
+
+        {/* Interesting facts — any number, shown on the mission screen. */}
+        <div className="border-t border-white/10 pt-4">
+          <span className="text-lg text-grey">
+            {t("missionForm.factsSection")}
+          </span>
+        </div>
+
+        {facts.fields.map((field, index) => (
+          <div
+            key={field.id}
+            className="flex flex-col gap-4 rounded-2xl border border-cyan-bright/25 bg-[rgba(2,37,51,0.35)] p-5"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-lg font-bold text-cyan-bright">
+                {t("missionForm.fact", { number: index + 1 })}
+              </span>
+              <button
+                type="button"
+                onClick={() => facts.remove(index)}
+                className="text-base text-orange-bright transition-opacity hover:opacity-75"
+              >
+                {t("missionForm.removeFact")}
+              </button>
+            </div>
+
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("missionForm.factTitleUz")}</span>
+              <input
+                className={fieldClass}
+                placeholder={t("missionForm.optional")}
+                {...register(`facts.${index}.titleUz` as const)}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("missionForm.factTitleRu")}</span>
+              <input
+                className={fieldClass}
+                {...register(`facts.${index}.titleRu` as const, {
+                  required: t("missionForm.factTextRequired"),
+                })}
+              />
+              {errors.facts?.[index]?.titleRu && (
+                <span className="text-sm text-error">
+                  {errors.facts[index]?.titleRu?.message}
+                </span>
+              )}
+            </label>
+
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("missionForm.factTextUz")}</span>
+              <textarea
+                rows={3}
+                className={fieldClass}
+                placeholder={t("missionForm.optional")}
+                {...register(`facts.${index}.descriptionUz` as const)}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("missionForm.factTextRu")}</span>
+              <textarea
+                rows={3}
+                className={fieldClass}
+                {...register(`facts.${index}.descriptionRu` as const, {
+                  required: t("missionForm.factTextRequired"),
+                })}
+              />
+              {errors.facts?.[index]?.descriptionRu && (
+                <span className="text-sm text-error">
+                  {errors.facts[index]?.descriptionRu?.message}
+                </span>
+              )}
+            </label>
+
+            <FileField
+              label={t("missionForm.factImage")}
+              accept={IMAGE_ACCEPT}
+              fileName={pickedName(watch(`facts.${index}.image`))}
+              registration={register(`facts.${index}.image` as const)}
+              existingName={
+                watch(`facts.${index}.existingImage`)
+                  ? t("missionForm.factImageStored")
+                  : null
+              }
+              onRemove={() => setValue(`facts.${index}.existingImage`, null)}
+            />
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() =>
+            facts.append({
+              titleRu: "",
+              titleUz: "",
+              descriptionRu: "",
+              descriptionUz: "",
+              image: undefined as unknown as FileList,
+              existingImage: null,
+            })
+          }
+          className="w-fit rounded-full border border-cyan-bright/40 px-5 py-2 text-lg text-cyan-bright transition-colors hover:bg-cyan-bright/10"
+        >
+          {t("missionForm.addFact")}
+        </button>
 
         {/* Bonus — optional, exactly one per mission. */}
         {!showBonus ? (

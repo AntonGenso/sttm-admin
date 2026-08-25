@@ -3,6 +3,7 @@ import type {
   CreateMissionPayload,
   IMissionData,
   IMissionDetails,
+  MissionFactInput,
   UpdateMissionPayload,
 } from "../types/missions";
 
@@ -37,6 +38,30 @@ const toFormData = (
 
     if (value instanceof File) {
       form.append(field, value);
+      return;
+    }
+
+    // Facts go as one JSON field; every picked picture rides along under the
+    // name the JSON points at.
+    if (field === "facts") {
+      const facts = (value as MissionFactInput[]).map((fact, index) => {
+        const imageField = fact.image ? `factImage_${index}` : null;
+        if (fact.image && imageField) {
+          form.append(imageField, fact.image);
+        }
+
+        return {
+          id: fact.id,
+          titleRu: fact.titleRu,
+          titleUz: fact.titleUz ?? "",
+          descriptionRu: fact.descriptionRu,
+          descriptionUz: fact.descriptionUz ?? "",
+          imageField,
+          keepImage: !imageField && Boolean(fact.keepImage),
+        };
+      });
+
+      form.append("facts", JSON.stringify(facts));
       return;
     }
 

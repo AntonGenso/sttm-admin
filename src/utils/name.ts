@@ -4,6 +4,8 @@
 // Digits and other symbols are rejected. Mirrored server-side in
 // sttm-server/src/utils/name.js — this is UX, the server is what protects the
 // endpoint.
+import { containsProfanity } from "./profanity";
+
 export const NAME_REGEX = /^[A-Za-zА-Яа-яЁё]+(?:[ '-][A-Za-zА-Яа-яЁё]+)*$/;
 
 export const NAME_MIN_LENGTH = 3;
@@ -21,6 +23,9 @@ export const validateName = (value: string): string | true => {
   }
   if (!NAME_REGEX.test(trimmed)) {
     return "validation.nameInvalid";
+  }
+  if (containsProfanity(trimmed)) {
+    return "validation.nameProfanity";
   }
   return true;
 };

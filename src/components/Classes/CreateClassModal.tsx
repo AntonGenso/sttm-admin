@@ -9,6 +9,7 @@ import { getCities, getSchools } from "../../api/dictionaries";
 import { CLASS_GRADES, CLASS_LETTER_REGEX } from "../../types/classes";
 import type { IClass } from "../../types/classes";
 import { Combobox } from "../../uikit/Combobox";
+import { containsProfanity } from "../../utils/profanity";
 
 type Inputs = {
   cityName: string;
@@ -123,6 +124,8 @@ export const CreateClassModal = ({ onClose, onCreated }: Props) => {
                 value: CITY_NAME_MAX_LENGTH,
                 message: t("createClass.nameTooLong"),
               },
+              validate: (value: string) =>
+                !containsProfanity(value) || t("createClass.nameProfanity"),
             }}
             render={({ field }) => (
               <Combobox
@@ -140,7 +143,9 @@ export const CreateClassModal = ({ onClose, onCreated }: Props) => {
             )}
           />
           {errors.cityName && (
-            <span className="text-sm text-error">{errors.cityName.message}</span>
+            <span className="text-sm text-error">
+              {errors.cityName.message}
+            </span>
           )}
         </label>
 
@@ -153,6 +158,8 @@ export const CreateClassModal = ({ onClose, onCreated }: Props) => {
             rules={{
               required: t("createClass.enterSchool"),
               maxLength: { value: 255, message: t("createClass.nameTooLong") },
+              validate: (value: string) =>
+                !containsProfanity(value) || t("createClass.nameProfanity"),
             }}
             render={({ field }) => (
               <Combobox
