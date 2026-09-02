@@ -14,7 +14,8 @@
   },
   "nav": {
     "home": "Главная",
-    "missions": "Миссии"
+    "missions": "Миссии",
+    "tests": "Тесты"
   },
   "auth": {
     "logout": "Выйти",
@@ -106,7 +107,9 @@
     "deleteError": "Не удалось удалить миссию",
     "hidden": "Скрыта",
     "visibleHint": "Видна — нажмите, чтобы скрыть",
-    "hiddenHint": "Скрыта — нажмите, чтобы показать"
+    "hiddenHint": "Скрыта — нажмите, чтобы показать",
+    "opensAt": "Откроется {{date}}",
+    "openedSince": "Открыта с {{date}}"
   },
   "missionDetail": {
     "notFound": "Миссия не найдена",
@@ -178,7 +181,10 @@
     "factImage": "Картинка факта",
     "factImageStored": "Картинка загружена",
     "factTextRequired": "Заполните заголовок и описание",
-    "optional": "необязательно"
+    "optional": "необязательно",
+    "opensAt": "Дата открытия (Ташкент, UTC+5)",
+    "opensAtHint": "До этого момента миссия закрыта для учеников",
+    "opensAtEmptyHint": "Пусто — миссия открыта сразу"
   },
   "classes": {
     "myClasses": "Мои классы",
@@ -289,5 +295,70 @@
     "create": "Создать класс",
     "creating": "Создание...",
     "createError": "Не удалось создать класс"
+  },
+  "tests": {
+    "title": "Тесты",
+    "subtitleAdmin": "Создавайте и управляйте тестами академии",
+    "subtitleTeacher": "Тесты академии: вопросы и правильные ответы",
+    "create": "+ Создать тест",
+    "open": "Смотреть вопросы",
+    "empty": "Тестов пока нет",
+    "levelBadge": "Тест {{level}}",
+    "questionCount": "{{count}} вопр.",
+    "deleteConfirm": "Удалить тест со всеми вопросами?",
+    "deleteError": "Не удалось удалить тест",
+    "hidden": "Скрыт",
+    "visibleHint": "Виден — нажмите, чтобы скрыть",
+    "hiddenHint": "Скрыт — нажмите, чтобы показать",
+    "opensAt": "Откроется {{date}}",
+    "openedSince": "Открыт с {{date}}"
+  },
+  "testForm": {
+    "newTitle": "Новый тест",
+    "editTitle": "Изменить тест",
+    "testName": "Название теста",
+    "testNamePlaceholder": "например, Земля",
+    "required": "Это поле обязательно",
+    "level": "Номер теста",
+    "levelNegative": "Номер не может быть отрицательным",
+    "levelHint": "Уникален: два теста не могут иметь один номер",
+    "levelTaken": "Тест с таким номером уже существует — выберите другой",
+    "opensAt": "Дата открытия (Ташкент, UTC+5)",
+    "opensAtHint": "До этого момента тест закрыт для учеников",
+    "opensAtEmptyHint": "Пусто — тест открыт сразу",
+    "coverImage": "Обложка",
+    "coverStored": "Обложка загружена",
+    "visibility": "Видимость",
+    "visibleToStudents": "Виден ученикам",
+    "hiddenFromStudents": "Скрыт от учеников",
+    "questionsSection": "Вопросы",
+    "question": "Вопрос {{number}}",
+    "addQuestion": "+ Добавить вопрос",
+    "removeQuestion": "Удалить вопрос",
+    "noQuestions": "Пока ни одного вопроса — добавьте хотя бы один",
+    "questionTextRu": "Текст вопроса (RU)",
+    "questionTextUz": "Текст вопроса (UZ)",
+    "questionTextRequired": "Введите текст вопроса",
+    "options": "Варианты ответа — отметьте правильный",
+    "optionRuPlaceholder": "Вариант {{letter}} (RU)",
+    "optionUzPlaceholder": "Вариант {{letter}} (UZ, необязательно)",
+    "optionsRequired": "Заполните вариант на русском",
+    "correct": "Правильный",
+    "optional": "необязательно",
+    "save": "Сохранить изменения",
+    "saving": "Сохранение...",
+    "add": "Добавить тест",
+    "adminOnly": "Менять тесты может только администратор",
+    "saveError": "Не удалось сохранить тест",
+    "reward": "Награда за тест",
+    "rewardHint": "По {{points}} XP за каждый правильный ответ — считается автоматически"
+  },
+  "testDetail": {
+    "question": "Вопрос {{number}}",
+    "correct": "Правильный",
+    "editTest": "Изменить тест",
+    "noQuestions": "В этом тесте пока нет вопросов",
+    "loadError": "Не удалось загрузить тест",
+    "staffOnly": "Вопросы теста доступны только администраторам и учителям"
   }
 }

@@ -14,7 +14,8 @@
   },
   "nav": {
     "home": "Bosh sahifa",
-    "missions": "Missiyalar"
+    "missions": "Missiyalar",
+    "tests": "Testlar"
   },
   "auth": {
     "logout": "Chiqish",
@@ -106,7 +107,9 @@
     "deleteError": "Missiyani o'chirib bo'lmadi",
     "hidden": "Yashirilgan",
     "visibleHint": "Ko'rinadi — yashirish uchun bosing",
-    "hiddenHint": "Yashirilgan — ko'rsatish uchun bosing"
+    "hiddenHint": "Yashirilgan — ko'rsatish uchun bosing",
+    "opensAt": "{{date}} da ochiladi",
+    "openedSince": "{{date}} dan ochiq"
   },
   "missionDetail": {
     "notFound": "Missiya topilmadi",
@@ -178,7 +181,10 @@
     "factImage": "Fakt rasmi",
     "factImageStored": "Rasm yuklangan",
     "factTextRequired": "Sarlavha va tavsifni to'ldiring",
-    "optional": "ixtiyoriy"
+    "optional": "ixtiyoriy",
+    "opensAt": "Ochilish sanasi (Toshkent, UTC+5)",
+    "opensAtHint": "Shu paytgacha missiya o‘quvchilar uchun yopiq",
+    "opensAtEmptyHint": "Bo‘sh — missiya darhol ochiq"
   },
   "classes": {
     "myClasses": "Mening sinflarim",
@@ -285,5 +291,70 @@
     "create": "Sinf yaratish",
     "creating": "Yaratilmoqda...",
     "createError": "Sinf yaratib bo'lmadi"
+  },
+  "tests": {
+    "title": "Testlar",
+    "subtitleAdmin": "Akademiya testlarini yarating va boshqaring",
+    "subtitleTeacher": "Akademiya testlari: savollar va to‘g‘ri javoblar",
+    "create": "+ Test yaratish",
+    "open": "Savollarni ko‘rish",
+    "empty": "Hozircha testlar yo‘q",
+    "levelBadge": "Test {{level}}",
+    "questionCount": "{{count}} savol",
+    "deleteConfirm": "Testni barcha savollari bilan o‘chirasizmi?",
+    "deleteError": "Testni o‘chirib bo‘lmadi",
+    "hidden": "Yashirilgan",
+    "visibleHint": "Ko‘rinadi — yashirish uchun bosing",
+    "hiddenHint": "Yashirilgan — ko‘rsatish uchun bosing",
+    "opensAt": "{{date}} da ochiladi",
+    "openedSince": "{{date}} dan ochiq"
+  },
+  "testForm": {
+    "newTitle": "Yangi test",
+    "editTitle": "Testni tahrirlash",
+    "testName": "Test nomi",
+    "testNamePlaceholder": "masalan, Yer",
+    "required": "Bu maydon majburiy",
+    "level": "Test raqami",
+    "levelNegative": "Raqam manfiy bo‘lishi mumkin emas",
+    "levelHint": "Noyob: ikki testda bir xil raqam bo‘lmaydi",
+    "levelTaken": "Bu raqamli test allaqachon mavjud — boshqasini tanlang",
+    "opensAt": "Ochilish sanasi (Toshkent, UTC+5)",
+    "opensAtHint": "Shu paytgacha test o‘quvchilar uchun yopiq",
+    "opensAtEmptyHint": "Bo‘sh — test darhol ochiq",
+    "coverImage": "Muqova rasmi",
+    "coverStored": "Muqova yuklangan",
+    "visibility": "Ko‘rinuvchanlik",
+    "visibleToStudents": "O‘quvchilarga ko‘rinadi",
+    "hiddenFromStudents": "O‘quvchilardan yashirilgan",
+    "questionsSection": "Savollar",
+    "question": "{{number}}-savol",
+    "addQuestion": "+ Savol qo‘shish",
+    "removeQuestion": "Savolni o‘chirish",
+    "noQuestions": "Hozircha savol yo‘q — kamida bittasini qo‘shing",
+    "questionTextRu": "Savol matni (RU)",
+    "questionTextUz": "Savol matni (UZ)",
+    "questionTextRequired": "Savol matnini kiriting",
+    "options": "Javob variantlari — to‘g‘risini belgilang",
+    "optionRuPlaceholder": "{{letter}} varianti (RU)",
+    "optionUzPlaceholder": "{{letter}} varianti (UZ, ixtiyoriy)",
+    "optionsRequired": "Ruscha variantni to‘ldiring",
+    "correct": "To‘g‘ri",
+    "optional": "ixtiyoriy",
+    "save": "O‘zgarishlarni saqlash",
+    "saving": "Saqlanmoqda...",
+    "add": "Test qo‘shish",
+    "adminOnly": "Testlarni faqat administrator o‘zgartira oladi",
+    "saveError": "Testni saqlab bo‘lmadi",
+    "reward": "Test uchun mukofot",
+    "rewardHint": "Har bir to‘g‘ri javob uchun {{points}} XP — avtomatik hisoblanadi"
+  },
+  "testDetail": {
+    "question": "{{number}}-savol",
+    "correct": "To‘g‘ri",
+    "editTest": "Testni tahrirlash",
+    "noQuestions": "Bu testda hozircha savollar yo‘q",
+    "loadError": "Testni yuklab bo‘lmadi",
+    "staffOnly": "Test savollari faqat administrator va o‘qituvchilarga ochiq"
   }
 }

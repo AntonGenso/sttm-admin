@@ -9,6 +9,7 @@ import { useAuthStore } from "../store/authStore";
 import missionDefaultCover from "../assets/mission-default.svg";
 import type { IMissionFile } from "../types/missions";
 import { toAssetUrl } from "@/utils/assetUrl";
+import { formatOpensAt, isUpcoming } from "@/utils/date";
 
 /** One localized material section rendered as a card with RU/UZ open buttons. */
 interface MaterialSection {
@@ -197,6 +198,24 @@ export default function MissionDetailPage() {
                   {hasBonus && (
                     <span className="rounded-lg bg-gradient-to-b from-[#4ade80] to-[#22c55e] px-3 py-1 text-sm font-extrabold tracking-wider text-white uppercase shadow-[0_2px_8px_rgba(34,197,94,0.45)]">
                       {t("missionDetail.plusBonus")}
+                    </span>
+                  )}
+                  {/* Opening date in Tashkent time; amber while it is ahead. */}
+                  {mission.opens_at && (
+                    <span
+                      className={`rounded-lg border px-3 py-1 font-mono text-sm tracking-wide ${
+                        isUpcoming(mission.opens_at)
+                          ? "border-orange-bright/40 bg-orange-bright/10 text-orange-bright"
+                          : "border-white/10 bg-white/[0.03] text-grey"
+                      }`}
+                    >
+                      {isUpcoming(mission.opens_at)
+                        ? t("missions.opensAt", {
+                            date: formatOpensAt(mission.opens_at),
+                          })
+                        : t("missions.openedSince", {
+                            date: formatOpensAt(mission.opens_at),
+                          })}
                     </span>
                   )}
                 </div>

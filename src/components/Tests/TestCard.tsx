@@ -1,23 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { IMissionData } from "@/types/missions";
+import type { ITestData } from "@/types/tests";
 import missionDefaultCover from "@/assets/mission-default.svg";
 import { toAssetUrl } from "@/utils/assetUrl";
 import { formatOpensAt, isUpcoming } from "@/utils/date";
 
 interface Props {
-  data: IMissionData;
+  data: ITestData;
   /** Edit, delete and the visibility toggle are rendered for admins only. */
   onEdit?: () => void;
   onDelete?: () => void;
   isDeleting?: boolean;
-  /** Flip the mission between visible and hidden; admin-only. */
   onToggleActive?: () => void;
   isTogglingActive?: boolean;
 }
 
-export const MissionCard = ({
+export const TestCard = ({
   data,
   onEdit,
   onDelete,
@@ -29,24 +28,23 @@ export const MissionCard = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const openMission = () => navigate(`/missions/${data.id}`);
+  const openTest = () => navigate(`/tests/${data.id}`);
 
-  // Undefined (legacy rows) counts as visible; only an explicit 0 hides it.
   const isActive = data.is_active !== 0;
 
-  // A mission with no date opens right away; one with a future date is still
-  // closed in the game, whatever its visibility flag says.
+  // A test with no date opens right away; one with a future date is still
+  // closed for students, whatever its visibility flag says.
   const isScheduled = isUpcoming(data.opens_at);
 
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={openMission}
+      onClick={openTest}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          openMission();
+          openTest();
         }
       }}
       className={`relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border bg-[rgba(5,20,30,0.7)] backdrop-blur-md transition-colors ${
@@ -59,7 +57,7 @@ export const MissionCard = ({
         <button
           type="button"
           aria-pressed={isActive}
-          title={isActive ? t("missions.visibleHint") : t("missions.hiddenHint")}
+          title={isActive ? t("tests.visibleHint") : t("tests.hiddenHint")}
           disabled={isTogglingActive}
           onClick={(event) => {
             event.stopPropagation();
@@ -88,7 +86,7 @@ export const MissionCard = ({
 
       {!isActive && (
         <span className="absolute left-3 top-3 z-10 rounded-full bg-black/60 px-2.5 py-1 font-mono text-xs uppercase tracking-widest text-grey backdrop-blur-md">
-          {t("missions.hidden")}
+          {t("tests.hidden")}
         </span>
       )}
 
@@ -100,20 +98,26 @@ export const MissionCard = ({
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[rgba(2,37,51,0.6)]">
             <img
-              src={toAssetUrl(data.cover_url) || data.picture || missionDefaultCover}
-              alt={data.label}
+              src={toAssetUrl(data.cover_url) || missionDefaultCover}
+              alt={data.label ?? data.name}
               className="h-full w-full object-cover"
             />
           </div>
           <div className="min-w-0">
+            {/* The number is what names the test in the game, so it leads. */}
+            <span className="font-mono text-xs uppercase tracking-widest text-cyan-bright">
+              {t("tests.levelBadge", {
+                level: String(data.level).padStart(2, "0"),
+              })}
+            </span>
             <p className="truncate text-2xl font-semibold text-white">
-              {data.label}
+              {data.label ?? data.name}
             </p>
-            {data?.xp != null && (
-              <span className="font-mono text-sm text-cyan-bright">
-                {data.xp} XP
-              </span>
-            )}
+            <span className="font-mono text-sm text-grey">
+              <span className="text-cyan-bright">{data.xp} XP</span>
+              {" · "}
+              {t("tests.questionCount", { count: data.question_count })}
+            </span>
           </div>
         </div>
 
@@ -131,20 +135,20 @@ export const MissionCard = ({
               <path d="M8 3v4M16 3v4M3 11h18" />
             </svg>
             {isScheduled
-              ? t("missions.opensAt", { date: formatOpensAt(data.opens_at) })
-              : t("missions.openedSince", { date: formatOpensAt(data.opens_at) })}
+              ? t("tests.opensAt", { date: formatOpensAt(data.opens_at) })
+              : t("tests.openedSince", { date: formatOpensAt(data.opens_at) })}
           </span>
         )}
 
         <button className="mt-auto w-full rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] py-2 text-lg font-bold text-white transition-opacity hover:opacity-85">
-          {t("missions.start")}
+          {t("tests.open")}
         </button>
 
         {(onEdit || onDelete) &&
           (isConfirmingDelete ? (
             <div className="flex flex-col gap-2 border-t border-white/10 pt-3">
               <span className="text-base text-grey">
-                {t("missions.deleteConfirm")}
+                {t("tests.deleteConfirm")}
               </span>
               <div className="flex items-center justify-end gap-3">
                 <button

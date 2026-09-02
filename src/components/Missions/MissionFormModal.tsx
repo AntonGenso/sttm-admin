@@ -5,6 +5,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { createMission, getMission, updateMission } from "../../api/missions";
+import { fromDateTimeLocal, toDateTimeLocal } from "../../utils/date";
 import { FileField } from "./FileField";
 import type {
   IMissionDetails,
@@ -29,6 +30,8 @@ type Inputs = {
   missionName: string;
   xp: string;
   level: string;
+  /** `datetime-local` value, read as Tashkent wall time; empty = opens at once. */
+  opensAt: string;
   gameLink: string;
   facts: FactInput[];
   bonusXp: string;
@@ -122,7 +125,7 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
     setValue,
     formState: { errors },
   } = useForm<Inputs>({
-    defaultValues: { xp: "0", level: "1", bonusXp: "0", facts: [] },
+    defaultValues: { xp: "0", level: "1", opensAt: "", bonusXp: "0", facts: [] },
   });
 
   const facts = useFieldArray({ control, name: "facts" });
@@ -141,6 +144,7 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         missionName: mission.label,
         xp: String(mission.xp ?? 0),
         level: String(mission.level ?? 0),
+        opensAt: toDateTimeLocal(mission.opens_at),
         gameLink: mission.game_link ?? "",
         bonusXp: String(mission.bonus_xp ?? 0),
         facts: (mission.facts ?? []).map((fact) => ({
@@ -182,6 +186,8 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         // that may carry a bonus. The column is kept for backward compatibility.
         type: "current" as const,
         isActive,
+        // Sent as UTC; an empty field clears the date, which update keeps.
+        opensAt: fromDateTimeLocal(values.opensAt ?? ""),
         gameLink: values.gameLink?.trim() ?? "",
         bonusXp: bonusActive ? Number(values.bonusXp) || 0 : 0,
         cover: values.cover?.[0],
@@ -347,6 +353,21 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
           {errors.level && (
             <span className="text-sm text-error">{errors.level.message}</span>
           )}
+        </label>
+
+        {/* Opening date — until it passes the mission stays closed in the game. */}
+        <label className="flex flex-col gap-1.5">
+          <span className={labelClass}>{t("missionForm.opensAt")}</span>
+          <input
+            type="datetime-local"
+            className={`${fieldClass} [color-scheme:dark]`}
+            {...register("opensAt")}
+          />
+          <span className="text-sm text-grey">
+            {watch("opensAt")
+              ? t("missionForm.opensAtHint")
+              : t("missionForm.opensAtEmptyHint")}
+          </span>
         </label>
 
         <label className="flex flex-col gap-1.5">

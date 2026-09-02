@@ -44,6 +44,9 @@ export const MainLayout = () => {
               <NavLink to="/missions" className={navLinkClass}>
                 {t("nav.missions")}
               </NavLink>
+              <NavLink to="/tests" className={navLinkClass}>
+                {t("nav.tests")}
+              </NavLink>
             </nav>
           </div>
 

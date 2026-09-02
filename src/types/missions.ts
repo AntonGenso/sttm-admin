@@ -10,6 +10,11 @@ export interface IMissionData {
   type?: MissionType | "";
   /** 1 — visible to students, 0 — hidden. Admins see both. */
   is_active?: number;
+  /**
+   * When the mission opens for students, UTC ISO 8601; null — right away.
+   * Entered and shown in Tashkent time (see `utils/date`).
+   */
+  opens_at?: string | null;
   /** Public MinIO link to the mission cover; null while none is uploaded. */
   cover_url?: string | null;
   game_link?: string | null;
@@ -80,6 +85,8 @@ export interface CreateMissionPayload {
   level?: number;
   type: MissionType;
   isActive?: boolean;
+  /** UTC ISO 8601; an empty string clears the date on update. */
+  opensAt?: string;
   gameLink?: string;
   bonusXp?: number;
   cover?: File;
