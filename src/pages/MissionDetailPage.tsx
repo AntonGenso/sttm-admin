@@ -30,6 +30,19 @@ const openFile = (file: IMissionFile) => {
   }
 };
 
+/**
+ * Игра миссии, открытая учителем.
+ *
+ * Отдельная вкладка, а не iframe: результат игра шлёт через
+ * `postMessage` окну, в которое встроена, и принимает его только ученическое
+ * приложение (`SUBMIT_SCORE` → `/api/submit-score` с сессией ученика). Здесь
+ * принимать сообщение некому, а `noopener` вдобавок обнуляет `window.opener` —
+ * так что учителю очки не начисляются.
+ */
+const openGame = (link: string) => {
+  window.open(link, "_blank", "noopener,noreferrer");
+};
+
 const LocaleButton = ({
   locale,
   file,
@@ -143,6 +156,9 @@ export default function MissionDetailPage() {
       ]
     : [];
 
+  /** Ссылка на игру миссии; пустая строка — игры у миссии нет. */
+  const gameLink = mission?.game_link ?? "";
+
   const hasBonus = Boolean(
     mission &&
     (mission.documents.ru.url ||
@@ -222,15 +238,32 @@ export default function MissionDetailPage() {
               </div>
             </div>
 
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="rounded-full border border-cyan-bright/40 px-5 py-2 text-lg text-cyan-bright transition-colors hover:bg-cyan-bright/10"
-              >
-                {t("missionDetail.editMission")}
-              </button>
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Учительский запуск игры. Счёт начисляется только ученику:
+                  игра сообщает результат через `postMessage` родительскому окну
+                  ученического приложения, а здесь она открыта отдельной
+                  вкладкой (и `noopener` рвёт связь с открывшим окном). */}
+              {gameLink && (
+                <button
+                  type="button"
+                  onClick={() => openGame(gameLink)}
+                  title={t("missionDetail.playGameHint")}
+                  className="rounded-full border border-orange-bright/50 bg-orange-bright/10 px-5 py-2 text-lg text-orange-bright transition-colors hover:bg-orange-bright/20"
+                >
+                  {t("missionDetail.playGame")}
+                </button>
+              )}
+
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="rounded-full border border-cyan-bright/40 px-5 py-2 text-lg text-cyan-bright transition-colors hover:bg-cyan-bright/10"
+                >
+                  {t("missionDetail.editMission")}
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

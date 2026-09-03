@@ -4,6 +4,8 @@ import type { UseFormRegisterReturn } from "react-hook-form";
 interface Props {
   label: string;
   accept: string;
+  /** Short note under the label, e.g. the accepted format. */
+  hint?: string;
   /** Name of the newly picked file, taken from the form's `watch` value. */
   fileName?: string;
   registration: UseFormRegisterReturn;
@@ -18,6 +20,7 @@ interface Props {
 export const FileField = ({
   label,
   accept,
+  hint,
   fileName,
   registration,
   existingName,
@@ -45,6 +48,7 @@ export const FileField = ({
     <div className="flex flex-col gap-1.5">
       <span className="font-mono text-xs uppercase tracking-widest text-cyan-bright">
         {label}
+        {hint && <span className="ml-2 normal-case text-grey">{hint}</span>}
       </span>
       <div className="flex items-center gap-3">
         <label

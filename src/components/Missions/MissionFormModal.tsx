@@ -52,7 +52,10 @@ interface Props {
   onClose: () => void;
 }
 
-const DOCUMENT_ACCEPT = ".pdf,.doc,.docx,.ppt,.pptx";
+// Только PDF: файл открывается по подписанной ссылке во вкладке браузера, а
+// doc/docx/ppt/pptx он показать не умеет и предлагает скачать. Тот же список —
+// в `DOCUMENT_TYPES` на бэкенде.
+const DOCUMENT_ACCEPT = "application/pdf";
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/avif";
 const VIDEO_ACCEPT =
   "video/mp4,video/webm,video/ogg,video/quicktime,video/x-matroska";
@@ -411,11 +414,13 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         <FileField
           label={t("missionForm.presentationUz")}
           accept={DOCUMENT_ACCEPT}
+          hint={t("missionForm.pdfOnly")}
           {...fileFieldProps("teacherGuideUz")}
         />
         <FileField
           label={t("missionForm.presentationRu")}
           accept={DOCUMENT_ACCEPT}
+          hint={t("missionForm.pdfOnly")}
           {...fileFieldProps("teacherGuideRu")}
         />
 
@@ -428,11 +433,13 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
         <FileField
           label={t("missionForm.notesUz")}
           accept={DOCUMENT_ACCEPT}
+          hint={t("missionForm.pdfOnly")}
           {...fileFieldProps("lessonNotesUz")}
         />
         <FileField
           label={t("missionForm.notesRu")}
           accept={DOCUMENT_ACCEPT}
+          hint={t("missionForm.pdfOnly")}
           {...fileFieldProps("lessonNotesRu")}
         />
 
@@ -588,11 +595,13 @@ export const MissionFormModal = ({ missionId, onClose }: Props) => {
             <FileField
               label={t("missionForm.instructionUz")}
               accept={DOCUMENT_ACCEPT}
+              hint={t("missionForm.pdfOnly")}
               {...fileFieldProps("documentUz")}
             />
             <FileField
               label={t("missionForm.instructionRu")}
               accept={DOCUMENT_ACCEPT}
+              hint={t("missionForm.pdfOnly")}
               {...fileFieldProps("documentRu")}
             />
           </div>
