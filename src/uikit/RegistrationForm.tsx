@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
@@ -20,6 +21,12 @@ import {
 } from "../utils/phone";
 import { PasswordInput } from "./PasswordInput";
 import { PasswordRequirements } from "./PasswordRequirements";
+import { CityAndSchoolFields } from "../components/Profile/CityAndSchoolFields";
+import {
+  EMPTY_CITY_AND_SCHOOL,
+  toProfilePayload,
+  type CityAndSchoolValue,
+} from "../components/Profile/profileValue";
 
 type Inputs = {
   name: string;
@@ -54,6 +61,12 @@ export const RegistrationForm = () => {
 
   const password = useWatch({ control, name: "password", defaultValue: "" });
 
+  // Город и школа живут вне react-hook-form: это не два поля, а одна связанная
+  // пара — школа принадлежит городу и сбрасывается вместе с ним.
+  const [profile, setProfile] = useState<CityAndSchoolValue>(
+    EMPTY_CITY_AND_SCHOOL,
+  );
+
   // No `required` rule: the field is never empty thanks to the prefix, so the
   // "is it filled in" check lives in validatePhone.
   const phoneField = register("phone", { validate: validatePhone });
@@ -73,6 +86,9 @@ export const RegistrationForm = () => {
       // only keeps TypeScript happy.
       phone: normalizePhone(values.phone) ?? values.phone,
       password: values.password,
+      // Оба поля необязательны: учитель, чьей школы ещё нет в справочнике,
+      // всё равно регистрируется и дозаполняет профиль перед первым классом.
+      ...toProfilePayload(profile),
     });
   });
 
@@ -88,7 +104,7 @@ export const RegistrationForm = () => {
     <form
       onSubmit={onSubmit}
       noValidate
-      className="w-full max-w-[360px] rounded-2xl border border-cyan-bright/40 bg-[rgba(7,21,42,0.75)] p-8 shadow-[0_0_40px_rgba(0,227,255,0.12)] backdrop-blur-xl"
+      className="w-full max-w-[420px] rounded-2xl border border-cyan-bright/40 bg-[rgba(7,21,42,0.75)] p-8 shadow-[0_0_40px_rgba(0,227,255,0.12)] backdrop-blur-xl"
     >
       <h1 className="text-center text-4xl font-bold tracking-wide text-white">
         {t("auth.registerTitle")}
@@ -186,6 +202,15 @@ export const RegistrationForm = () => {
             {t(errors.confirmPassword.message ?? "")}
           </span>
         )}
+      </div>
+
+      <div className="mb-5 flex flex-col gap-5 rounded-xl border border-white/10 bg-[rgba(2,37,51,0.35)] p-4">
+        <CityAndSchoolFields
+          value={profile}
+          onChange={setProfile}
+          labelClass={labelClass}
+          note={t("profile.optionalOnRegister")}
+        />
       </div>
 
       {serverError && (

@@ -61,6 +61,21 @@ export const normalizePhone = (value: string): string | null => {
 };
 
 /**
+ * Хранимый номер — в вид, в котором его читают: `+998901234567` →
+ * `+998(90)1234567`. Пустой номер существует (ученик регистрируется без
+ * телефона) и показывается прочерком, а не пустой ячейкой.
+ *
+ * Нераспознанное значение возвращается как есть: показать номер в чужом
+ * формате лучше, чем спрятать его за прочерком.
+ */
+export const formatPhoneDisplay = (value: string | null): string => {
+  if (!value) {
+    return "—";
+  }
+  return normalizePhone(value) ? formatPhoneInput(value) : value;
+};
+
+/**
  * react-hook-form validator: `true` when valid, otherwise the i18n key of the
  * error. The caller translates it (phoneInvalid takes a `{format}` param).
  */

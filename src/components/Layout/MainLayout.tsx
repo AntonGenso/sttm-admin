@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../store/authStore";
 import { logoutUser } from "../../api/auth";
 import { LanguageSwitcher } from "../../uikit/LanguageSwitcher";
+import { ProfileModal } from "../Profile/ProfileModal";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
@@ -17,6 +19,9 @@ export const MainLayout = () => {
   const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  // Админы школу не ведут — город и школа есть только у учителя.
+  const isAdmin = useAuthStore((state) => state.hasRole("admin"));
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleLogout = () => {
     // Best-effort: revoke the refresh token server-side before clearing local
@@ -52,7 +57,20 @@ export const MainLayout = () => {
 
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
-            {user && <span className="text-lg text-grey">{user.name}</span>}
+            {user && !isAdmin ? (
+              <button
+                onClick={() => setIsProfileOpen(true)}
+                className="text-left text-lg text-grey transition-colors hover:text-white"
+                title={t("profile.title")}
+              >
+                {user.name}
+                <span className="ml-2 text-base text-cyan-bright/80">
+                  {user.schoolName ?? t("profile.notSet")}
+                </span>
+              </button>
+            ) : (
+              user && <span className="text-lg text-grey">{user.name}</span>
+            )}
             <button
               onClick={handleLogout}
               className="rounded-full border border-cyan-bright/40 px-4 py-1.5 text-base text-cyan-bright transition-colors hover:bg-cyan-bright/10"
@@ -66,6 +84,10 @@ export const MainLayout = () => {
       <main className="mx-auto w-full max-w-[1200px] flex-1 px-6 py-8">
         <Outlet />
       </main>
+
+      {isProfileOpen && (
+        <ProfileModal onClose={() => setIsProfileOpen(false)} />
+      )}
     </div>
   );
 };

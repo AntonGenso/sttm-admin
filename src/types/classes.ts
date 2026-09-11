@@ -9,6 +9,8 @@ export interface ISchool {
   id: number;
   city_id: number;
   name: string;
+  /** 0 — школу завёл учитель, и она ждёт проверки админом. */
+  is_verified: number;
 }
 
 /** Which set the class letter comes from — «А» and "A" are different classes. */
@@ -91,11 +93,15 @@ export interface IClassStudentDetails extends IClassStudent {
   attempts: IStudentAttempt[];
 }
 
+/**
+ * Город и школа сюда не входят: они лежат в профиле учителя. `schoolId`
+ * передаётся, только когда класс осознанно заводится в другой школе — профиль
+ * при этом не меняется.
+ */
 export interface CreateClassPayload {
-  cityName: string;
-  schoolName: string;
   grade: number;
   letter: string;
+  schoolId?: number;
 }
 
 export const CLASS_GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];

@@ -8,9 +8,18 @@ export interface LoginPayload {
   password: string;
 }
 
-/** Registration additionally requires a phone number; logging in does not. */
+/**
+ * Registration additionally requires a phone number; logging in does not.
+ *
+ * Город и школа необязательны: учитель, чьей школы ещё нет в справочнике, всё
+ * равно получает аккаунт и дозаполняет профиль перед первым классом.
+ */
 export interface RegisterPayload extends LoginPayload {
   phone: string;
+  cityId?: number | null;
+  schoolId?: number | null;
+  /** Название новой школы; учитывается, только когда `schoolId` не прислан. */
+  schoolName?: string;
 }
 
 export interface AuthResponse {
