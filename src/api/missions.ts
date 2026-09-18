@@ -20,6 +20,22 @@ export const getMission = async (id: number): Promise<IMissionDetails> => {
 };
 
 /**
+ * Ссылка на презентацию миссии. Отдельный запрос, а не поле карточки: сервер
+ * выдаёт подписанную ссылку и в этот же момент записывает, что учитель открыл
+ * презентацию. Другого способа получить её нет — на этом держится отчёт по
+ * пилоту, поэтому ссылку нельзя кэшировать и переиспользовать.
+ */
+export const openTeacherGuide = async (
+  missionId: number,
+  locale: "ru" | "uz",
+): Promise<{ url: string | null; name: string | null }> => {
+  const { data } = await axios.get<{ url: string | null; name: string | null }>(
+    `${BASE_URL}/${missionId}/teacher-guide/${locale}`,
+  );
+  return data;
+};
+
+/**
  * Admin-only on the server: a non-admin caller gets a 403 back.
  *
  * Sent as multipart — the cover, the student documents and the teacher guides

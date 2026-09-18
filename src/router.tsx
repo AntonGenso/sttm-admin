@@ -21,6 +21,7 @@ import SchoolDetailPage from "./pages/SchoolDetailPage";
 import CitiesPage from "./pages/CitiesPage";
 import CityDetailPage from "./pages/CityDetailPage";
 import EnrollmentsPage from "./pages/EnrollmentsPage";
+import PilotReportPage from "./pages/PilotReportPage";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
@@ -57,6 +58,7 @@ export const router = createBrowserRouter([
               { path: "cities", element: <CitiesPage /> },
               { path: "cities/:id", element: <CityDetailPage /> },
               { path: "enrollments", element: <EnrollmentsPage /> },
+              { path: "pilot-report", element: <PilotReportPage /> },
             ],
           },
         ],

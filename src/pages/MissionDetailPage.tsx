@@ -3,31 +3,57 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
-import { getMission } from "../api/missions";
+import { getMission, openTeacherGuide } from "../api/missions";
 import { MissionFormModal } from "../components/Missions/MissionFormModal";
 import { useAuthStore } from "../store/authStore";
 import missionDefaultCover from "../assets/mission-default.svg";
-import type { IMissionFile } from "../types/missions";
+import type { IMissionFile, IMissionGuide } from "../types/missions";
 import { toAssetUrl } from "@/utils/assetUrl";
 import { formatOpensAt, isUpcoming } from "@/utils/date";
+
+type Locale = "ru" | "uz";
+
+/** Материал на одной локали в том виде, в каком его рисует карточка. */
+interface MaterialEntry {
+  available: boolean;
+  name: string | null;
+  /** Готовая ссылка; null — её нужно запросить у сервера (см. `resolve`). */
+  url: string | null;
+}
 
 /** One localized material section rendered as a card with RU/UZ open buttons. */
 interface MaterialSection {
   title: string;
   hint: string;
-  ru: IMissionFile;
-  uz: IMissionFile;
+  ru: MaterialEntry;
+  uz: MaterialEntry;
   /** i18n key for the call to action; defaults to "open". */
   actionKey?: string;
+  /**
+   * Задан — ссылки у карточки нет, её выдаёт сервер по запросу. Так устроена
+   * презентация: выдача ссылки и запись «учитель открыл презентацию» — один
+   * вызов, и обойти его нельзя.
+   */
+  resolve?: (locale: Locale) => Promise<string | null>;
 }
 
+const fromFile = (file: IMissionFile): MaterialEntry => ({
+  available: Boolean(file.url),
+  name: file.name,
+  url: file.url,
+});
+
+const fromGuide = (guide: IMissionGuide): MaterialEntry => ({
+  available: guide.available,
+  name: guide.name,
+  url: null,
+});
+
 /** A signed link is short-lived, so it is opened, never stored — a new tab. */
-const openFile = (file: IMissionFile) => {
-  if (file.url) {
-    // Адрес MinIO знает только бэкенд: с MINIO_BROWSER_PREFIX он уже отдаёт
-    // ссылку через прокси (`/uploads/...`), без него — абсолютную.
-    window.open(file.url, "_blank", "noopener,noreferrer");
-  }
+const openUrl = (url: string) => {
+  // Адрес MinIO знает только бэкенд: с MINIO_BROWSER_PREFIX он уже отдаёт
+  // ссылку через прокси (`/uploads/...`), без него — абсолютную.
+  window.open(url, "_blank", "noopener,noreferrer");
 };
 
 /**
@@ -45,22 +71,67 @@ const openGame = (link: string) => {
 
 const LocaleButton = ({
   locale,
-  file,
+  entry,
+  resolve,
   actionKey = "missionDetail.open",
 }: {
-  locale: "ru" | "uz";
-  file: IMissionFile;
+  locale: Locale;
+  entry: MaterialEntry;
+  resolve?: (locale: Locale) => Promise<string | null>;
   actionKey?: string;
 }) => {
   const { t } = useTranslation();
-  const available = Boolean(file.url);
+  const [isOpening, setIsOpening] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const available = entry.available;
+
+  /**
+   * Вкладка открывается ДО запроса и пустой: открытая из колбэка `await`
+   * считается браузером непрошеной и блокируется. `window.open` с `noopener`
+   * возвращает null и ссылку в неё уже не подставить, поэтому opener гасится
+   * вручную сразу после открытия.
+   */
+  const handleClick = async () => {
+    if (entry.url) {
+      openUrl(entry.url);
+      return;
+    }
+    if (!resolve || isOpening) {
+      return;
+    }
+
+    const tab = window.open("", "_blank");
+    if (tab) {
+      tab.opener = null;
+    }
+
+    setIsOpening(true);
+    setFailed(false);
+    try {
+      const url = await resolve(locale);
+      if (!url) {
+        throw new Error("no url");
+      }
+      if (tab) {
+        tab.location.href = url;
+      } else {
+        // Вкладку заблокировали — открываем в текущей, лишь бы урок не встал.
+        openUrl(url);
+      }
+    } catch {
+      tab?.close();
+      setFailed(true);
+    } finally {
+      setIsOpening(false);
+    }
+  };
 
   return (
     <button
       type="button"
-      disabled={!available}
-      onClick={() => openFile(file)}
-      title={file.name ?? undefined}
+      disabled={!available || isOpening}
+      onClick={handleClick}
+      title={entry.name ?? undefined}
       className={[
         "flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left text-lg transition-colors",
         available
@@ -72,7 +143,13 @@ const LocaleButton = ({
         {locale === "ru" ? t("missionDetail.localeRu") : t("missionDetail.localeUz")}
       </span>
       <span className="font-mono text-xs tracking-widest uppercase">
-        {available ? t(actionKey) : t("missionDetail.noFile")}
+        {!available
+          ? t("missionDetail.noFile")
+          : isOpening
+            ? t("missionDetail.opening")
+            : failed
+              ? t("missionDetail.openFailed")
+              : t(actionKey)}
       </span>
     </button>
   );
@@ -85,8 +162,18 @@ const MaterialCard = ({ section }: { section: MaterialSection }) => (
       <p className="mt-1 text-base text-grey">{section.hint}</p>
     </div>
     <div className="mt-auto flex flex-col gap-2">
-      <LocaleButton locale="uz" file={section.uz} actionKey={section.actionKey} />
-      <LocaleButton locale="ru" file={section.ru} actionKey={section.actionKey} />
+      <LocaleButton
+        locale="uz"
+        entry={section.uz}
+        resolve={section.resolve}
+        actionKey={section.actionKey}
+      />
+      <LocaleButton
+        locale="ru"
+        entry={section.ru}
+        resolve={section.resolve}
+        actionKey={section.actionKey}
+      />
     </div>
   </div>
 );
@@ -137,20 +224,22 @@ export default function MissionDetailPage() {
         {
           title: t("missionDetail.presentationTitle"),
           hint: t("missionDetail.presentationHint"),
-          ru: mission.teacher_guide.ru,
-          uz: mission.teacher_guide.uz,
+          ru: fromGuide(mission.teacher_guide.ru),
+          uz: fromGuide(mission.teacher_guide.uz),
+          resolve: async (locale) =>
+            (await openTeacherGuide(mission.id, locale)).url,
         },
         {
           title: t("missionDetail.notesTitle"),
           hint: t("missionDetail.notesHint"),
-          ru: mission.lesson_notes.ru,
-          uz: mission.lesson_notes.uz,
+          ru: fromFile(mission.lesson_notes.ru),
+          uz: fromFile(mission.lesson_notes.uz),
         },
         {
           title: t("missionDetail.videoTitle"),
           hint: t("missionDetail.videoHint"),
-          ru: mission.video.ru,
-          uz: mission.video.uz,
+          ru: fromFile(mission.video.ru),
+          uz: fromFile(mission.video.uz),
           actionKey: "missionDetail.watch",
         },
       ]
@@ -170,8 +259,8 @@ export default function MissionDetailPage() {
     ? {
         title: t("missionDetail.instructionTitle"),
         hint: t("missionDetail.instructionHint"),
-        ru: mission.documents.ru,
-        uz: mission.documents.uz,
+        ru: fromFile(mission.documents.ru),
+        uz: fromFile(mission.documents.uz),
       }
     : null;
 

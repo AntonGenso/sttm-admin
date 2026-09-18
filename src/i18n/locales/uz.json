@@ -100,7 +100,9 @@
     "inClassesHint": "Kod orqali qo'shilgan o'quvchilar",
     "schoolsUnverifiedHint": "{{n}} ta tekshiruv kutmoqda",
     "cities": "Shaharlar",
-    "citiesHint": "Ro'yxatdan o'tish uchun ma'lumotnoma"
+    "citiesHint": "Ro'yxatdan o'tish uchun ma'lumotnoma",
+    "pilot": "Pilot natijalari",
+    "pilotHint": "Sinflar bo'yicha hisobot va yuklash"
   },
   "directory": {
     "backHome": "← Bosh sahifa",
@@ -242,6 +244,8 @@
     "instructionTitle": "O'quvchi uchun yo'riqnoma",
     "instructionHint": "Kadetlar uchun tarqatma materiallar",
     "open": "Ochish ↗",
+    "opening": "Ochilmoqda…",
+    "openFailed": "Ochib bo'lmadi",
     "watch": "Ko'rish ↗",
     "noFile": "fayl yo'q",
     "localeRu": "Ruscha",
@@ -490,5 +494,28 @@
     "incompleteTitle": "Profil to'ldirilmagan",
     "incompleteDesc": "Shahar va maktabni ko'rsating — ularsiz sinf ochib bo'lmaydi.",
     "fillIn": "Ko'rsatish"
+  },
+  "pilot": {
+    "title": "Pilot natijalari",
+    "subtitle": "Har bir qator — bitta sinf: o'qituvchi nimani ochgan va dars kimgacha yetgan",
+    "colTeacher": "O'qituvchi",
+    "colSchool": "Maktab",
+    "colClass": "Sinf",
+    "colCode": "Kod",
+    "colConnected": "Ulangan",
+    "colMissions": "Missiyalar",
+    "colDelivered": "O'tkazilgan",
+    "colEngagement": "Jalb etilganlik",
+    "download": "CSV yuklab olish",
+    "downloading": "Fayl tayyorlanmoqda…",
+    "downloadError": "Yuklab bo'lmadi",
+    "tipOpened": "taqdimot {{date}} ochilgan",
+    "tipNotOpened": "taqdimot ochilmagan",
+    "tipDone": "testni yakunlaganlar: {{n}}",
+    "notesTitle": "Raqamlarni qanday o'qish kerak",
+    "noteGuideByTeacher": "Taqdimot ochilgan sana sinf bo'yicha emas, o'qituvchi bo'yicha: taqdimot missiya sahifasida ochiladi, u yerda sinf tanlanmaydi. Bitta o'qituvchining barcha sinflarida bu sana bir xil.",
+    "noteUniqueStudents": "«Testni yakunlaganlar» — urinishlar emas, noyob o'quvchilar: qayta o'tish hisobni oshirmaydi.",
+    "noteDenominator": "Jalb etilganlik bugungi ulangan o'quvchilar soniga nisbatan hisoblanadi. Yakunlashlar o'quvchilar kamroq bo'lgan paytda to'plangan, shuning uchun foiz ko'proq pasaytirilgan.",
+    "noteHistory": "Taqdimot ochilishlari kuzatuv yoqilgan paytdan yoziladi — undan oldin o'tkazilgan darslar bo'yicha ustun bo'sh va uni tiklab bo'lmaydi."
   }
 }

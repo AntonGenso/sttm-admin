@@ -72,6 +72,15 @@ export const AdminDashboard = () => {
       hint: t("dashboard.inClassesHint"),
       to: "/enrollments",
     },
+    {
+      // Единственная плитка без числа: за ней не счётчик, а сводка по классам.
+      // Считать её «итог пилота» одним числом нельзя — он складывается из
+      // проведённых миссий и вовлечённости, а они живут в самой таблице.
+      label: t("dashboard.pilot"),
+      icon: "📈",
+      hint: t("dashboard.pilotHint"),
+      to: "/pilot-report",
+    },
   ];
 
   return (

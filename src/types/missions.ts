@@ -52,6 +52,12 @@ export interface IMissionFile {
   name: string | null;
 }
 
+/** Презентация: файл есть или нет, ссылка берётся отдельным запросом. */
+export interface IMissionGuide {
+  available: boolean;
+  name: string | null;
+}
+
 export interface IMissionDetails extends IMissionData {
   /** Reward for the bonus part; the bonus exists when instruction files are set. */
   bonus_xp: number;
@@ -59,8 +65,12 @@ export interface IMissionDetails extends IMissionData {
   video: { ru: IMissionFile; uz: IMissionFile };
   /** «Инструкция для ученика» — private, handed out by signed link. */
   documents: { ru: IMissionFile; uz: IMissionFile };
-  /** «Презентация» — private, handed out by signed link. */
-  teacher_guide: { ru: IMissionFile; uz: IMissionFile };
+  /**
+   * «Презентация» — без ссылки: её выдаёт только
+   * `GET /missions/:id/teacher-guide/:locale`, который заодно записывает
+   * открытие. Здесь лишь то, чем рисуется карточка и форма редактирования.
+   */
+  teacher_guide: { ru: IMissionGuide; uz: IMissionGuide };
   /** «Конспект урока» — private, handed out by signed link. */
   lesson_notes: { ru: IMissionFile; uz: IMissionFile };
   /** «Интересные факты», in the order they are shown. */
