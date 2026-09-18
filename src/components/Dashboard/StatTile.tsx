@@ -1,8 +1,12 @@
+import { Link } from "react-router-dom";
+
 interface Props {
   label: string;
   value?: number;
   icon: string;
   hint?: string;
+  /** Куда ведёт плитка. Без него она просто карточка с числом. */
+  to?: string;
   isLoading?: boolean;
 }
 
@@ -15,28 +19,48 @@ const formatValue = (value: number) =>
     ? value.toLocaleString("ru-RU")
     : `${(value / 1000).toFixed(1).replace(/\.0$/, "")}K`;
 
+const tileClass =
+  "flex h-full flex-col gap-3 rounded-2xl border border-cyan-bright/25 bg-[rgba(5,20,30,0.7)] p-6 backdrop-blur-md";
+
 /**
  * One headline number. No delta or sparkline: the API has no history behind
  * these counters, and an invented trend line would be a lie.
+ *
+ * С `to` плитка становится ссылкой на строки, которые она считает.
  */
-export const StatTile = ({ label, value, icon, hint, isLoading }: Props) => (
-  <div className="flex h-full flex-col gap-3 rounded-2xl border border-cyan-bright/25 bg-[rgba(5,20,30,0.7)] p-6 backdrop-blur-md">
-    <div className="flex items-center gap-3">
-      <span
-        aria-hidden
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[rgba(2,37,51,0.6)] text-xl"
-      >
-        {icon}
-      </span>
-      <span className="font-mono text-xs uppercase tracking-widest text-cyan-bright">
-        {label}
-      </span>
-    </div>
+export const StatTile = ({ label, value, icon, hint, to, isLoading }: Props) => {
+  const body = (
+    <>
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[rgba(2,37,51,0.6)] text-xl"
+        >
+          {icon}
+        </span>
+        <span className="font-mono text-xs uppercase tracking-widest text-cyan-bright">
+          {label}
+        </span>
+      </div>
 
-    <span className="text-6xl font-bold leading-none text-white">
-      {isLoading || value === undefined ? "—" : formatValue(value)}
-    </span>
+      <span className="text-6xl font-bold leading-none text-white">
+        {isLoading || value === undefined ? "—" : formatValue(value)}
+      </span>
 
-    {hint && <span className="mt-auto text-base text-grey">{hint}</span>}
-  </div>
-);
+      {hint && <span className="mt-auto text-base text-grey">{hint}</span>}
+    </>
+  );
+
+  if (!to) {
+    return <div className={tileClass}>{body}</div>;
+  }
+
+  return (
+    <Link
+      to={to}
+      className={`${tileClass} transition-colors hover:border-cyan-bright/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-bright`}
+    >
+      {body}
+    </Link>
+  );
+};
