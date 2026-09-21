@@ -511,6 +511,8 @@
     "downloadError": "Yuklab bo'lmadi",
     "tipOpened": "taqdimot {{date}} ochilgan",
     "tipNotOpened": "taqdimot ochilmagan",
+    "tipFirstDone": "test birinchi marta {{date}} yakunlangan",
+    "tipNotDone": "sinfda test hali yakunlanmagan",
     "tipDone": "testni yakunlaganlar: {{n}}",
     "notesTitle": "Raqamlarni qanday o'qish kerak",
     "noteGuideByTeacher": "Taqdimot ochilgan sana sinf bo'yicha emas, o'qituvchi bo'yicha: taqdimot missiya sahifasida ochiladi, u yerda sinf tanlanmaydi. Bitta o'qituvchining barcha sinflarida bu sana bir xil.",

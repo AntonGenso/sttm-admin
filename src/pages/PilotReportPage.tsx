@@ -14,6 +14,7 @@ import {
   type DataTableColumn,
 } from "../components/Directory/DataTable";
 import { DirectoryView } from "../components/Directory/DirectoryView";
+import { formatLessonDate } from "../utils/date";
 import { formatPhoneDisplay } from "../utils/phone";
 
 /**
@@ -47,13 +48,19 @@ const MissionStrip = ({ row }: { row: IPilotRow }) => {
     <div className="flex flex-wrap gap-1">
       {row.missions.map((cell) => {
         const state = missionState(cell);
+        // По порядку событий: учитель открыл материал → класс впервые завершил
+        // тест → сколько учеников всего. Две даты рядом и есть ответ на «дошёл
+        // ли урок до детей и как быстро».
         const title = [
           `M${cell.level} ${cell.label}`,
           cell.guide_opened_at
-            ? t("pilot.tipOpened", {
-                date: new Date(cell.guide_opened_at).toLocaleDateString("ru-RU"),
-              })
+            ? t("pilot.tipOpened", { date: formatLessonDate(cell.guide_opened_at) })
             : t("pilot.tipNotOpened"),
+          cell.first_completed_at
+            ? t("pilot.tipFirstDone", {
+                date: formatLessonDate(cell.first_completed_at),
+              })
+            : t("pilot.tipNotDone"),
           t("pilot.tipDone", { n: cell.students_done }),
         ].join("\n");
 

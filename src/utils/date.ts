@@ -106,6 +106,21 @@ export const fromDateTimeLocal = (value: string): string => {
   return new Date(naive - offset).toISOString();
 };
 
+const LESSON_DATE = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  timeZone: MISSION_TIMEZONE,
+});
+
+/**
+ * «18.09.2026» — день урока по Ташкенту. Отчёт по пилоту считает даты так же
+ * (и CSV тоже), поэтому экран и выгрузка не расходятся на вечерних уроках,
+ * которые по UTC уже приходятся на следующие сутки.
+ */
+export const formatLessonDate = (value?: string | null) =>
+  value ? LESSON_DATE.format(new Date(value)) : "—";
+
 /** «01.09.2025, 09:00» — the opening moment as Tashkent reads it. */
 export const formatOpensAt = (value?: string | null) =>
   value ? OPENS_AT.format(new Date(value)) : "—";
