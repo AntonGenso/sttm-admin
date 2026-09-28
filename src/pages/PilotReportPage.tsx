@@ -14,6 +14,7 @@ import {
   type DataTableColumn,
 } from "../components/Directory/DataTable";
 import { DirectoryView } from "../components/Directory/DirectoryView";
+import { MissionBreakdownModal } from "../components/Pilot/MissionBreakdownModal";
 import { formatLessonDate } from "../utils/date";
 import { formatPhoneDisplay } from "../utils/phone";
 
@@ -29,7 +30,9 @@ import { formatPhoneDisplay } from "../utils/phone";
 /** Состояние одной миссии в классе — тем же порядком, что и в игре. */
 const missionState = (cell: IPilotMissionCell) => {
   if (cell.students_done > 0) return "done";
-  if (cell.guide_opened_at) return "opened";
+  // Учитель приступил, но до детей ещё не дошло. «Начал урок» и «открыл
+  // презентацию» — оба про это, поэтому красят одинаково.
+  if (cell.lesson_started_at || cell.guide_opened_at) return "opened";
   return "idle";
 };
 
@@ -41,7 +44,13 @@ const STATE_CLASS: Record<string, string> = {
   idle: "border-white/10 bg-white/[0.03] text-grey/40",
 };
 
-const MissionStrip = ({ row }: { row: IPilotRow }) => {
+const MissionStrip = ({
+  row,
+  onPick,
+}: {
+  row: IPilotRow;
+  onPick: (missionId: number) => void;
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -53,6 +62,11 @@ const MissionStrip = ({ row }: { row: IPilotRow }) => {
         // ли урок до детей и как быстро».
         const title = [
           `M${cell.level} ${cell.label}`,
+          cell.lesson_started_at
+            ? t("pilot.tipLesson", {
+                date: formatLessonDate(cell.lesson_started_at),
+              })
+            : t("pilot.tipNoLesson"),
           cell.guide_opened_at
             ? t("pilot.tipOpened", { date: formatLessonDate(cell.guide_opened_at) })
             : t("pilot.tipNotOpened"),
@@ -61,17 +75,24 @@ const MissionStrip = ({ row }: { row: IPilotRow }) => {
                 date: formatLessonDate(cell.first_completed_at),
               })
             : t("pilot.tipNotDone"),
-          t("pilot.tipDone", { n: cell.students_done }),
+          t("pilot.tipBuckets", {
+            done: cell.students_done,
+            progress: cell.students_in_progress,
+            none: cell.students_not_started,
+          }),
+          t("pilot.tipClick"),
         ].join("\n");
 
         return (
-          <span
+          <button
+            type="button"
             key={cell.mission_id}
             title={title}
-            className={`flex h-7 w-7 items-center justify-center rounded-md border font-mono text-xs ${STATE_CLASS[state]}`}
+            onClick={() => onPick(cell.mission_id)}
+            className={`flex h-7 w-7 items-center justify-center rounded-md border font-mono text-xs transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-bright ${STATE_CLASS[state]}`}
           >
             {cell.level}
-          </span>
+          </button>
         );
       })}
     </div>
@@ -82,6 +103,11 @@ export default function PilotReportPage() {
   const { t } = useTranslation();
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadFailed, setDownloadFailed] = useState(false);
+  /** Открытая клетка отчёта: чей класс и какая миссия. */
+  const [picked, setPicked] = useState<{
+    classId: number;
+    missionId: number;
+  } | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["admin", "pilot-report"],
@@ -148,7 +174,14 @@ export default function PilotReportPage() {
       key: "strip",
       header: t("pilot.colMissions"),
       width: "16rem",
-      render: (row) => <MissionStrip row={row} />,
+      render: (row) => (
+        <MissionStrip
+          row={row}
+          onPick={(missionId) =>
+            setPicked({ classId: row.class_id, missionId })
+          }
+        />
+      ),
     },
     {
       key: "delivered",
@@ -210,6 +243,14 @@ export default function PilotReportPage() {
 
       {downloadFailed && (
         <p className="text-lg text-error">{t("pilot.downloadError")}</p>
+      )}
+
+      {picked && (
+        <MissionBreakdownModal
+          classId={picked.classId}
+          missionId={picked.missionId}
+          onClose={() => setPicked(null)}
+        />
       )}
 
       {/* Оговорки к цифрам стоят рядом с цифрами: в отрыве от них отчёт читают

@@ -36,6 +36,16 @@ export const openTeacherGuide = async (
 };
 
 /**
+ * «Начать урок»: отмечает, что учитель приступил к миссии.
+ *
+ * В отчёт по пилоту идёт самое раннее нажатие, поэтому повторные ничего не
+ * портят — и запрос намеренно не блокирует переход на карточку миссии.
+ */
+export const startLesson = async (missionId: number): Promise<void> => {
+  await axios.post(`${BASE_URL}/${missionId}/lesson-start`);
+};
+
+/**
  * Admin-only on the server: a non-admin caller gets a 403 back.
  *
  * Sent as multipart — the cover, the student documents and the teacher guides

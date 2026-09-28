@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { IMissionData } from "@/types/missions";
 import missionDefaultCover from "@/assets/mission-default.svg";
+import { startLesson } from "@/api/missions";
 import { toAssetUrl } from "@/utils/assetUrl";
 import { formatOpensAt, isUpcoming } from "@/utils/date";
 
@@ -30,6 +31,18 @@ export const MissionCard = ({
   const { t } = useTranslation();
 
   const openMission = () => navigate(`/missions/${data.id}`);
+
+  /**
+   * Отмечает начало урока и сразу открывает миссию.
+   *
+   * Переход не ждёт ответа: на уроке пауза заметнее, чем несчитанное событие,
+   * а запрос переживает навигацию внутри SPA и дойдёт сам. Ошибка гасится —
+   * сервер и так пишет её в свой лог, а учителю от неё толку нет.
+   */
+  const beginLesson = () => {
+    void startLesson(data.id).catch(() => {});
+    openMission();
+  };
 
   // Undefined (legacy rows) counts as visible; only an explicit 0 hides it.
   const isActive = data.is_active !== 0;
@@ -136,7 +149,11 @@ export const MissionCard = ({
           </span>
         )}
 
-        <button className="mt-auto w-full rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] py-2 text-lg font-bold text-white transition-opacity hover:opacity-85">
+        <button
+          type="button"
+          onClick={beginLesson}
+          className="mt-auto w-full rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] py-2 text-lg font-bold text-white transition-opacity hover:opacity-85"
+        >
           {t("missions.start")}
         </button>
 

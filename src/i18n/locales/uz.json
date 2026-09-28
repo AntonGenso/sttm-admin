@@ -11,7 +11,8 @@
     "removing": "Chiqarilmoqda...",
     "undo": "Qaytarish",
     "back": "Orqaga",
-    "saving": "Saqlanmoqda..."
+    "saving": "Saqlanmoqda...",
+    "close": "Yopish"
   },
   "nav": {
     "home": "Bosh sahifa",
@@ -518,6 +519,18 @@
     "noteGuideByTeacher": "Taqdimot ochilgan sana sinf bo'yicha emas, o'qituvchi bo'yicha: taqdimot missiya sahifasida ochiladi, u yerda sinf tanlanmaydi. Bitta o'qituvchining barcha sinflarida bu sana bir xil.",
     "noteUniqueStudents": "«Testni yakunlaganlar» — urinishlar emas, noyob o'quvchilar: qayta o'tish hisobni oshirmaydi.",
     "noteDenominator": "Jalb etilganlik bugungi ulangan o'quvchilar soniga nisbatan hisoblanadi. Yakunlashlar o'quvchilar kamroq bo'lgan paytda to'plangan, shuning uchun foiz ko'proq pasaytirilgan.",
-    "noteHistory": "Taqdimot ochilishlari kuzatuv yoqilgan paytdan yoziladi — undan oldin o'tkazilgan darslar bo'yicha ustun bo'sh va uni tiklab bo'lmaydi."
+    "noteHistory": "Taqdimot ochilishlari kuzatuv yoqilgan paytdan yoziladi — undan oldin o'tkazilgan darslar bo'yicha ustun bo'sh va uni tiklab bo'lmaydi.",
+    "bucket_done": "O'tganlar",
+    "bucket_in_progress": "Boshlab, tugatmaganlar",
+    "bucket_none": "Boshlamaganlar",
+    "bucketEmpty": "hech kim",
+    "bucketInProgressEmpty": "hech kim — o'yin test boshlanganini emas, faqat topshirilganini xabar qiladi",
+    "attemptsShort": "{{n}} urinish",
+    "breakdownError": "Sinf tarkibini yuklab bo'lmadi",
+    "noTest": "Bu missiyada test yo'q, shuning uchun uni o'tib bo'lmaydi.",
+    "tipLesson": "dars {{date}} boshlangan",
+    "tipNoLesson": "dars boshlanmagan",
+    "tipBuckets": "o'tgan {{done}} · o'tmagan {{progress}} · boshlamagan {{none}}",
+    "tipClick": "poimyon ko'rish uchun bosing"
   }
 }

@@ -22,9 +22,41 @@ export interface IPilotMissionCell {
    * учителя она поэтому одинаковая.
    */
   guide_opened_at: string | null;
+  /** Нажатие «Начать урок» — прямой признак того, что учитель приступил. */
+  lesson_started_at: string | null;
   /** Уникальные ученики класса, завершившие тест; перепрохождения не считаются. */
   students_done: number;
+  /**
+   * Начали тест и не закончили. Пока всегда 0: игра не сообщает о старте,
+   * строка прогресса появляется только в момент сдачи.
+   */
+  students_in_progress: number;
+  /** Подключённые, кто к тесту не приступал. */
+  students_not_started: number;
   first_completed_at: string | null;
+}
+
+/** В какую корзину попал ученик по конкретной миссии. */
+export type StudentBucket = "done" | "in_progress" | "none";
+
+export interface IPilotStudent {
+  id: number;
+  name: string;
+  bucket: StudentBucket;
+  best_score: number | null;
+  attempts: number | null;
+  first_completed_at: string | null;
+}
+
+export interface IPilotBreakdown {
+  class: {
+    id: number;
+    label: string;
+    school_name: string;
+    teacher_name: string;
+  };
+  mission: { id: number; level: number; label: string; has_test: boolean };
+  students: IPilotStudent[];
 }
 
 export interface IPilotRow {
@@ -48,6 +80,17 @@ export interface IPilotReport {
   missions: IPilotMission[];
   rows: IPilotRow[];
 }
+
+/** Поимённо, кто из класса прошёл миссию, а кто нет. */
+export const getClassMissionStudents = async (
+  classId: number,
+  missionId: number,
+): Promise<IPilotBreakdown> => {
+  const { data } = await axios.get<IPilotBreakdown>(
+    `${BASE_URL}/classes/${classId}/missions/${missionId}`,
+  );
+  return data;
+};
 
 export const getPilotReport = async (): Promise<IPilotReport> => {
   const { data } = await axios.get<IPilotReport>(BASE_URL);
