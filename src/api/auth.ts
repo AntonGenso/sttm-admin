@@ -20,6 +20,11 @@ export interface RegisterPayload extends LoginPayload {
   schoolId?: number | null;
   /** Название новой школы; учитывается, только когда `schoolId` не прислан. */
   schoolName?: string;
+  /**
+   * Согласие с правилами и политикой. Пока документы не опубликованы, сервер
+   * поле игнорирует; после публикации — отклоняет регистрацию без него.
+   */
+  termsAccepted?: boolean;
 }
 
 export interface AuthResponse {

@@ -18,6 +18,14 @@ export interface AuthUser {
   cityName: string | null;
   schoolId: number | null;
   schoolName: string | null;
+  /**
+   * Принял ли пользователь действующую редакцию правил.
+   *
+   * `undefined` — сессия из localStorage, сохранённая до появления этого поля;
+   * такую считаем принятой, чтобы старый вход не заблокировал работу. Реальное
+   * значение приедет с ближайшим обновлением токена.
+   */
+  termsAccepted?: boolean;
 }
 
 /** Профиль заполнен настолько, чтобы можно было завести класс. */
@@ -36,6 +44,8 @@ interface AuthState {
   setUser: (user: AuthUser) => void;
   logout: () => void;
   hasRole: (role: RoleName) => boolean;
+  /** Отмечает согласие, не дожидаясь обновления токена. */
+  markTermsAccepted: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -50,6 +60,12 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user }),
       logout: () => set({ token: null, refreshToken: null, user: null }),
       hasRole: (role) => get().user?.roles?.includes(role) ?? false,
+      markTermsAccepted: () => {
+        const { user } = get();
+        if (user) {
+          set({ user: { ...user, termsAccepted: true } });
+        }
+      },
     }),
     { name: "sttm-admin-auth" },
   ),

@@ -5,6 +5,7 @@ import { useAuthStore } from "../../store/authStore";
 import { logoutUser } from "../../api/auth";
 import { LanguageSwitcher } from "../../uikit/LanguageSwitcher";
 import { ProfileModal } from "../Profile/ProfileModal";
+import { LegalGate } from "../Legal/LegalGate";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
@@ -88,6 +89,9 @@ export const MainLayout = () => {
       {isProfileOpen && (
         <ProfileModal onClose={() => setIsProfileOpen(false)} />
       )}
+
+      {/* Поверх всего: пока согласие не дано, панелью пользоваться нельзя. */}
+      <LegalGate />
     </div>
   );
 };

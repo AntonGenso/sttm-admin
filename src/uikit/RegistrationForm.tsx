@@ -22,6 +22,8 @@ import {
 import { PasswordInput } from "./PasswordInput";
 import { PasswordRequirements } from "./PasswordRequirements";
 import { CityAndSchoolFields } from "../components/Profile/CityAndSchoolFields";
+import { LegalConsentField } from "../components/Legal/LegalConsentField";
+import { useLegalConsentSatisfied } from "../components/Legal/useLegal";
 import {
   EMPTY_CITY_AND_SCHOOL,
   toProfilePayload,
@@ -71,6 +73,9 @@ export const RegistrationForm = () => {
   // "is it filled in" check lives in validatePhone.
   const phoneField = register("phone", { validate: validatePhone });
 
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const consentSatisfied = useLegalConsentSatisfied(termsAccepted);
+
   const mutation = useMutation({
     mutationFn: registerUser,
     onSuccess: (data) => {
@@ -81,6 +86,7 @@ export const RegistrationForm = () => {
 
   const onSubmit = handleSubmit((values) => {
     mutation.mutate({
+      termsAccepted,
       name: values.name.trim(),
       // Validation already guarantees the number parses, `?? values.phone`
       // only keeps TypeScript happy.
@@ -213,13 +219,21 @@ export const RegistrationForm = () => {
         />
       </div>
 
+      {/* Появится само, когда документы опубликуют; до тех пор ничего не рисует. */}
+      <div className="mb-4">
+        <LegalConsentField
+          checked={termsAccepted}
+          onChange={setTermsAccepted}
+        />
+      </div>
+
       {serverError && (
         <p className="mb-4 text-center text-sm text-error">{serverError}</p>
       )}
 
       <button
         type="submit"
-        disabled={mutation.isPending}
+        disabled={mutation.isPending || !consentSatisfied}
         className="w-full rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] py-3 text-xl font-bold text-white transition-opacity hover:opacity-85 active:opacity-70 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {mutation.isPending ? t("auth.registering") : t("auth.registerSubmit")}

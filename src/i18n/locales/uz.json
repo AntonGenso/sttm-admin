@@ -532,5 +532,16 @@
     "tipNoLesson": "dars boshlanmagan",
     "tipBuckets": "o'tgan {{done}} · o'tmagan {{progress}} · boshlamagan {{none}}",
     "tipClick": "poimyon ko'rish uchun bosing"
+  },
+  "legal": {
+    "title": "Ishtirok qoidalari",
+    "intro": "Davom etish uchun hujjatlar bilan tanishganingizni tasdiqlang.",
+    "consentPrefix": "Men tanishdim va roziman:",
+    "terms": "ishtirok qoidalari",
+    "and": "va",
+    "privacy": "maxfiylik siyosati",
+    "accept": "Tasdiqlayman",
+    "accepting": "Saqlanmoqda…",
+    "error": "Rozilikni saqlab bo'lmadi. Qayta urinib ko'ring."
   }
 }
