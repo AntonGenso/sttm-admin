@@ -6,6 +6,7 @@ import { logoutUser } from "../../api/auth";
 import { LanguageSwitcher } from "../../uikit/LanguageSwitcher";
 import { ProfileModal } from "../Profile/ProfileModal";
 import { LegalGate } from "../Legal/LegalGate";
+import { ConsentGate } from "../Consent/ConsentGate";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
@@ -92,6 +93,7 @@ export const MainLayout = () => {
 
       {/* Поверх всего: пока согласие не дано, панелью пользоваться нельзя. */}
       <LegalGate />
+      <ConsentGate onLogout={handleLogout} />
     </div>
   );
 };

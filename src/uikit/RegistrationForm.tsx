@@ -29,6 +29,7 @@ import {
   toProfilePayload,
   type CityAndSchoolValue,
 } from "../components/Profile/profileValue";
+import { ConsentCheckboxes, type ConsentValue } from "./ConsentCheckboxes";
 
 type Inputs = {
   name: string;
@@ -60,6 +61,13 @@ export const RegistrationForm = () => {
     // expected format and keeps the country code out of the operator code.
     defaultValues: { phone: PHONE_PREFIX },
   });
+
+  // Both boxes start unchecked; the submit button stays disabled until both are.
+  const [consent, setConsent] = useState<ConsentValue>({
+    rules: false,
+    privacy: false,
+  });
+  const consentGiven = consent.rules && consent.privacy;
 
   const password = useWatch({ control, name: "password", defaultValue: "" });
 
@@ -95,6 +103,8 @@ export const RegistrationForm = () => {
       // Оба поля необязательны: учитель, чьей школы ещё нет в справочнике,
       // всё равно регистрируется и дозаполняет профиль перед первым классом.
       ...toProfilePayload(profile),
+      acceptRules: consent.rules,
+      acceptPrivacy: consent.privacy,
     });
   });
 
@@ -233,11 +243,19 @@ export const RegistrationForm = () => {
 
       <button
         type="submit"
-        disabled={mutation.isPending || !consentSatisfied}
+        disabled={mutation.isPending || !consentSatisfied || !consentGiven}
         className="w-full rounded-full bg-gradient-to-br from-cyan-bright to-[#00b8a9] py-3 text-xl font-bold text-white transition-opacity hover:opacity-85 active:opacity-70 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {mutation.isPending ? t("auth.registering") : t("auth.registerSubmit")}
       </button>
+
+      <div className="mt-5">
+        <ConsentCheckboxes
+          variant="register"
+          value={consent}
+          onChange={setConsent}
+        />
+      </div>
 
       <p className="mt-5 text-center text-base text-grey">
         {t("auth.haveAccount")}{" "}

@@ -25,6 +25,9 @@ export interface RegisterPayload extends LoginPayload {
    * поле игнорирует; после публикации — отклоняет регистрацию без него.
    */
   termsAccepted?: boolean;
+  /** Pilot program rules and privacy policy — both must be accepted. */
+  acceptRules: boolean;
+  acceptPrivacy: boolean;
 }
 
 export interface AuthResponse {

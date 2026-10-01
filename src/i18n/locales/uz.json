@@ -543,5 +543,18 @@
     "accept": "Tasdiqlayman",
     "accepting": "Saqlanmoqda…",
     "error": "Rozilikni saqlab bo'lmadi. Qayta urinib ko'ring."
+  },
+  "consent": {
+    "register": {
+      "rules": "<rules>Pilot dasturida ishtirok etish qoidalari</rules>ni qabul qilaman",
+      "privacy": "<privacy>Maxfiylik siyosati</privacy>ga muvofiq shaxsga doir ma’lumotlarimga ishlov berilishiga rozilik beraman"
+    },
+    "modal": {
+      "title": "Mission Moon",
+      "text": "Mission Moon pilot dasturi hujjatlari: Ishtirok etish qoidalari hamda Maxfiylik va shaxsga doir ma’lumotlarga ishlov berish siyosati. Platformada ishlashni davom ettirish uchun ular bilan tanishib chiqing va roziligingizni tasdiqlang.",
+      "rules": "<rules>Pilot dasturida ishtirok etish qoidalari</rules> bilan tanishdim va ularni qabul qilaman",
+      "privacy": "<privacy>Maxfiylik siyosati</privacy> bilan tanishdim va shaxsga doir ma’lumotlarimga ishlov berilishiga rozilik beraman",
+      "submit": "Qabul qilish va davom etish"
+    }
   }
 }
