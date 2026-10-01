@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 import { Trans } from "react-i18next";
 
 /**
@@ -21,7 +21,7 @@ interface Props {
   variant: "register" | "modal";
 }
 
-const docLink = (href: string): ReactNode => (
+const docLink = (href: string): ReactElement => (
   <a
     href={href}
     target="_blank"
